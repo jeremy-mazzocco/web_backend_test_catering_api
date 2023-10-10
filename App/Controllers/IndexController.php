@@ -10,8 +10,13 @@ class IndexController extends BaseController {
      * Controller function used to test whether the project was set up properly.
      * @return void
      */
-    public function test() {
+    public function index() {
         // Respond with 200 (OK):
         (new Status\Ok(['message' => 'Hello world!']))->send();
+    }
+
+    public function test() {
+        // Respond with 200 (OK):
+        (new Status\Ok(['message' => 'Hello test!']))->send();
     }
 }
