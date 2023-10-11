@@ -64,5 +64,93 @@ class FacilityController extends BaseController
         }
     }
 
-   
+
+
+    // CREATE A FACILITY
+    public function createFacility()
+    {
+        try {
+            // Get data from the request body and decode
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            // Validation of the sent data
+            if (!isset($data['name']) || !isset($data['creation_date']) || !isset($data['location_id'])) {
+                throw new \Exception('Required data missing.');
+            }
+
+            // Create a Facility model
+            $facility = new Facility(
+                $data['name'],
+                $data['creation_date'],
+                $data['location_id']
+            );
+
+            // Check if the location_id exists in the Location table
+            $query = 'SELECT id FROM Location WHERE id = :location_id';
+            $bind = ['location_id' => $facility->getLocationId()];
+            $this->db->executeQuery($query, $bind);
+            $existingLocation = $this->db->getResults();
+
+            if (!$existingLocation) {
+                throw new \Exception('Location with the specified does not exist.');
+            }
+
+            // Check if the creation_date is a corrct format
+            if (isset($data['creation_date']) && strtotime($data['creation_date']) === false) {
+                throw new \Exception('Invalid Date format.');
+            }
+
+            // Insert the facility into the database
+            $query = 'INSERT INTO Facility (name, creation_date, location_id) VALUES (:name, :creation_date, :location_id)';
+            $bind = [
+                'name' => $facility->getName(),
+                'creation_date' => $facility->getCreationDate(),
+                'location_id' => $facility->getLocationId()
+            ];
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new \Exception('Error while creating the facility.');
+            }
+
+            // Get the ID of the newly created facility
+            $facilityId = $this->db->getLastInsertedId();
+
+            // Check and handle tags
+            if (isset($data['tags']) && is_array($data['tags'])) {
+                foreach ($data['tags'] as $tag) {
+                    // Validation of tag data
+                    if (!isset($tag)) {
+                        throw new \Exception('Incomplete tag data.');
+                    }
+
+                    $tagName = $tag;
+
+                    // Check if the tag already exists
+                    $query = 'SELECT id FROM Tag WHERE name = :name';
+                    $bind = ['name' => $tagName];
+                    $this->db->executeQuery($query, $bind);
+                    $existingTag = $this->db->getResults();
+
+                    // If the tag exists, get its ID. Otherwise, return an error.
+                    if ($existingTag) {
+                        $tagId = $existingTag[0]['id'];
+                    } else {
+                        // Tag doesn't exist, return an error
+                        throw new \Exception('Tag does not exist.');
+                    }
+
+                    // Create the association between the facility and the tag
+                    $query = 'INSERT INTO Facility_Tag (facility_id, tag_id) VALUES (:facility_id, :tag_id)';
+                    $bind = ['facility_id' => $facilityId, 'tag_id' => $tagId];
+                    if (!$this->db->executeQuery($query, $bind)) {
+                        throw new \Exception('Error in associating facility and tag.');
+                    }
+                }
+            }
+
+            // Respond with success
+            (new Status\Ok(['message' => 'Facility and tags created successfully!']))->send();
+        } catch (\Exception $e) {
+            (new Status\InternalServerError(['message' => 'Error in creating facility and tags.', 'error' => $e->getMessage()]))->send();
+        }
+    }
 }
