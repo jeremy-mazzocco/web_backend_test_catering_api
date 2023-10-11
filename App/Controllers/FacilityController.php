@@ -26,7 +26,7 @@ class FacilityController extends BaseController
             }
 
             // For each facility, attach associated location and tags
-            foreach ($facilities as &$facility) {
+            foreach ($facilities as $facility) {
 
                 // Fetch the location associated with the current facility
                 $query = 'SELECT * 
@@ -64,12 +64,72 @@ class FacilityController extends BaseController
         }
     }
 
+    // GET FACILITY BY ID
+    public function getFacilityById($id)
+    {
+        try {
+            // Begin transaction
+            $this->db->beginTransaction();
 
+            // Get the facility from the database
+            $queryFacility = 'SELECT * FROM Facility WHERE id = :id';
+            $bindFacility = ['id' => $id];
+            if (!$this->db->executeQuery($queryFacility, $bindFacility)) {
+                throw new \Exception('Error fetching the facility.');
+            }
+
+            $facility = $this->db->getResults();
+
+            // Check if Facility is in the database
+            if (empty($facility)) {
+                (new Status\NotFound(['message' => 'Facility not found']))->send();
+                return;
+            }
+
+            $facility = $facility[0];
+
+            // Get the location of the facility
+            $queryLocation = 'SELECT * FROM Location WHERE id = :location_id';
+            $bindLocation = ['location_id' => $facility['location_id']];
+            if (!$this->db->executeQuery($queryLocation, $bindLocation)) {
+                throw new \Exception('Error fetching the location of the facility.');
+            }
+
+            $location = $this->db->getResults();
+            $facility['location'] = $location[0];
+
+            // Get the tags associated with the facility
+            $queryTag = 'SELECT * FROM Tag
+            JOIN Facility_Tag ON Facility_Tag.tag_id = Tag.id
+            WHERE Facility_Tag.facility_id = :facility_id';
+            $bindTag = ['facility_id' => $id];
+            if (!$this->db->executeQuery($queryTag, $bindTag)) {
+                throw new \Exception('Error fetching the tags of the facility.');
+            }
+
+            $tags = $this->db->getResults();
+            $facility['tags'] = $tags;
+
+            //Save transaction
+            $this->db->commit();
+
+            (new Status\Ok($facility))->send();
+        } catch (\Exception $e) {
+
+            // Rollback transaction
+            $this->db->rollBack();
+
+            (new Status\InternalServerError(['message' => 'Error fetching facility details.', 'error' => $e->getMessage()]))->send();
+        }
+    }
 
     // CREATE A FACILITY
     public function createFacility()
     {
         try {
+            // Begin trasaction
+            $this->db->beginTransaction();
+
             // Get data from the request body and decode
             $data = json_decode(file_get_contents("php://input"), true);
 
@@ -85,6 +145,19 @@ class FacilityController extends BaseController
                 $data['location_id']
             );
 
+            // Check if a facility with the same name and location_id already exists
+            $query = 'SELECT id FROM Facility WHERE name = :name AND location_id = :location_id';
+            $bind = [
+                'name' => $facility->getName(),
+                'location_id' => $facility->getLocationId()
+            ];
+            $this->db->executeQuery($query, $bind);
+            $existingFacility = $this->db->getResults();
+
+            if ($existingFacility) {
+                throw new \Exception('This facility in this location already exist.');
+            }
+
             // Check if the location_id exists in the Location table
             $query = 'SELECT id FROM Location WHERE id = :location_id';
             $bind = ['location_id' => $facility->getLocationId()];
@@ -95,7 +168,7 @@ class FacilityController extends BaseController
                 throw new \Exception('Location with the specified does not exist.');
             }
 
-            // Check if the creation_date is a corrct format
+            // Check if the creation_date is a correct format
             if (isset($data['creation_date']) && strtotime($data['creation_date']) === false) {
                 throw new \Exception('Invalid Date format.');
             }
@@ -117,7 +190,7 @@ class FacilityController extends BaseController
             // Check and handle tags
             if (isset($data['tags']) && is_array($data['tags'])) {
                 foreach ($data['tags'] as $tag) {
-                    // Validation of tag data
+
                     if (!isset($tag)) {
                         throw new \Exception('Incomplete tag data.');
                     }
@@ -134,7 +207,6 @@ class FacilityController extends BaseController
                     if ($existingTag) {
                         $tagId = $existingTag[0]['id'];
                     } else {
-                        // Tag doesn't exist, return an error
                         throw new \Exception('Tag does not exist.');
                     }
 
@@ -147,10 +219,18 @@ class FacilityController extends BaseController
                 }
             }
 
-            // Respond with success
+            // Save transaction
+            $this->db->commit();
+
             (new Status\Ok(['message' => 'Facility and tags created successfully!']))->send();
         } catch (\Exception $e) {
+
+            // Rollback the transaction
+            $this->db->rollBack();
+
             (new Status\InternalServerError(['message' => 'Error in creating facility and tags.', 'error' => $e->getMessage()]))->send();
         }
     }
+
+ 
 }
