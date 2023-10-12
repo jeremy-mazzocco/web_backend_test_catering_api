@@ -332,11 +332,11 @@ class FacilityController extends BaseController
             $this->db->rollBack();
             (new Status\BadRequest(['message' => $e->getMessage()]))->send();
         } catch (Exceptions\InternalServerError $e) {
-            // Rollback the transaction in case of an error
+
             $this->db->rollBack();
             (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
         } catch (Exceptions\NotFound $e) {
-            // Rollback the transaction in case of an error
+
             $this->db->rollBack();
             (new Status\NotFound(['message' => $e->getMessage()]))->send();
         }
@@ -402,67 +402,73 @@ class FacilityController extends BaseController
     public function searchFacilities()
     {
         try {
-            // // Pagination, get data from client
-            // $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 8;
-            // $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            // Pagination
+            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 8;
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
-            // // Validate limit and page
-            // if ($limit < 1 || $limit > 100) {
-            //     throw new Exceptions\BadRequest;
-            // }
-            // if ($page < 1) {
-            //     throw new Exceptions\BadRequest;
-            // }
+            // Validate limit and page
+            if ($limit < 1 || $limit > 100) {
+                throw new Exceptions\BadRequest;
+            }
+            if ($page < 1) {
+                throw new Exceptions\BadRequest;
+            }
 
-            // $offset = ($page - 1) * $limit;
+            $offset = ($page - 1) * $limit;
 
-
-            // Prendere i parametri dalla richiesta
+            // Get parameters from the request
             $data = json_decode(file_get_contents("php://input"), true);
             $bind = [];
             $conditions = [];
 
-            $query = "SELECT DISTINCT f.* FROM Facility f 
-                  LEFT JOIN Facility_Tag ft ON f.id = ft.facility_id
-                  LEFT JOIN Tag t ON ft.tag_id = t.id
-                  LEFT JOIN Location l ON f.location_id = l.id";
+            // Query to join all data
+            $query = "SELECT DISTINCT Facility.* FROM Facility 
+              LEFT JOIN Facility_Tag ON Facility.id = Facility_Tag.facility_id
+              LEFT JOIN Tag ON Facility_Tag.tag_id = Tag.id
+              LEFT JOIN Location ON Facility.location_id = Location.id";
 
-            // Se viene fornito il nome della struttura, aggiungilo alle condizioni
+            // If a facility name is provided, add it to the conditions
             if (!empty($data['facility_name'])) {
-                $conditions[] = "f.name LIKE :facility_name";
+                $conditions[] = "Facility.name LIKE :facility_name";
                 $bind['facility_name'] = '%' . $data['facility_name'] . '%';
             }
 
-            // Se viene fornito il nome del tag, aggiungilo alle condizioni
+            // If a tag nae is provided, add it to the conditions
             if (!empty($data['tag_name'])) {
-                $conditions[] = "t.name LIKE :tag_name";
+                $conditions[] = "Tag.name LIKE :tag_name";
                 $bind['tag_name'] = '%' . $data['tag_name'] . '%';
             }
 
-            // Se viene fornita la città della località, aggiungila alle condizioni
+            // If a city is provided, add it to the conditions
             if (!empty($data['city'])) {
-                $conditions[] = "l.city LIKE :city";
+                $conditions[] = "Location.city LIKE :city";
                 $bind['city'] = '%' . $data['city'] . '%';
             }
 
-            // Se ci sono delle condizioni, aggiungile alla query
+            // If there are any conditions, append them to the query
             if ($conditions) {
                 $query .= ' WHERE ' . implode(' AND ', $conditions);
             }
 
-            // Eseguire la query
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new \Exception('Errore nella ricerca delle strutture.');
+                throw new Exceptions\InternalServerError();
             }
 
             $results = $this->db->getResults();
+            if (!$results) {
+                throw new Exceptions\BadRequest;
+            }
 
-            // Rispondere con i risultati
             (new Status\Ok($results))->send();
-        } catch (\Exception $e) {
-            (new Status\InternalServerError(['message' => 'Errore nella ricerca.', 'error' => $e->getMessage()]))->send();
+        } catch (Status\BadRequest $e) {
+
+            (new Status\BadRequest(['message' => $e->getMessage()]))->send();
+        } catch (Exceptions\InternalServerError $e) {
+
+            (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
         }
     }
+
 
 
     // VALIDATION FUNCTIONS
