@@ -3,12 +3,9 @@
 namespace App\Controllers;
 
 use App\Models\Facility;
-use App\Models\Tag;
 use App\Plugins\Http\Response as Status;
 use App\Plugins\Http\Exceptions;
-use App\Plugins\Http\ApiException;
-use App\Plugins\Db\Db;
-use Exception;
+
 
 class FacilityController extends BaseController
 {
@@ -17,9 +14,18 @@ class FacilityController extends BaseController
     public function getAllFacilities()
     {
         try {
-            // Pagination parameters
+            // Pagination, get data from client
             $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 8;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+            // Validate limit and page
+            if ($limit < 1 || $limit > 100) {
+                throw new Exceptions\BadRequest;
+            }
+            if ($page < 1) {
+                throw new Exceptions\BadRequest;
+            }
+
             $offset = ($page - 1) * $limit;
 
             // Fetch all the facilities with pagination
@@ -65,68 +71,71 @@ class FacilityController extends BaseController
 
             // Return the result
             (new Status\Ok($facilities))->send();
-        } catch (ApiException $e) {
-            $e->send();
+        } catch (Exceptions\BadRequest $e) {
+
+            (new Status\BadRequest(['message' => $e->getMessage()]))->send();
+        } catch (Exceptions\InternalServerError $e) {
+
+            (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
         }
     }
 
-
     // GET FACILITY BY ID
-    public function getFacilityById($id)
+    public function getFacilityById($facilityId)
     {
         try {
-            // Begin transaction
-            $this->db->beginTransaction();
+            // VALIDATIONS of the id
+            $this->validateFacilityId($facilityId);
 
             // Get the facility from the database
-            $queryFacility = 'SELECT * FROM Facility WHERE id = :id';
-            $bindFacility = ['id' => $id];
-            if (!$this->db->executeQuery($queryFacility, $bindFacility)) {
-                throw new Exceptions\InternalServerError('Error fetching the facility.');
-            }
-
+            $query = 'SELECT * FROM Facility WHERE id = :id';
+            $bind = ['id' => $facilityId];
+            $this->db->executeQuery($query, $bind);
             $facility = $this->db->getResults();
 
-            // Check if Facility is in the database
+            // Check if the facility is found
             if (empty($facility)) {
-                (new Exceptions\NotFound(['message' => 'Facility not found']))->send();
-                return;
+                throw new Exceptions\NotFound;
             }
-
             $facility = $facility[0];
 
             // Get the location of the facility
-            $queryLocation = 'SELECT * FROM Location WHERE id = :location_id';
-            $bindLocation = ['location_id' => $facility['location_id']];
-            if (!$this->db->executeQuery($queryLocation, $bindLocation)) {
-                throw new Exceptions\InternalServerError('Error fetching the location of the facility.');
+            $query = 'SELECT * FROM Location WHERE id = :location_id';
+            $bind = ['location_id' => $facility['location_id']];
+            $this->db->executeQuery($query, $bind);
+            $location = $this->db->getResults();
+
+            // Check if the location is found
+            if (empty($location)) {
+                throw new Exceptions\NotFound;
             }
 
-            $location = $this->db->getResults();
             $facility['location'] = $location[0];
 
             // Get the tags associated with the facility
-            $queryTag = 'SELECT * FROM Tag
+            $query = 'SELECT * FROM Tag
             JOIN Facility_Tag ON Facility_Tag.tag_id = Tag.id
             WHERE Facility_Tag.facility_id = :facility_id';
-            $bindTag = ['facility_id' => $id];
-            if (!$this->db->executeQuery($queryTag, $bindTag)) {
-                throw new Exceptions\InternalServerError('Error fetching the location of the facility.');
+            $bind = ['facility_id' => $facilityId];
+
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new Exceptions\InternalServerError;
             }
 
             $tags = $this->db->getResults();
             $facility['tags'] = $tags;
 
-            //Save transaction
-            $this->db->commit();
 
             (new Status\Ok($facility))->send();
-        } catch (\Exception $e) {
+        } catch (Exceptions\InternalServerError $e) {
 
-            // Rollback transaction
-            $this->db->rollBack();
+            (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
+        } catch (Exceptions\NotFound $e) {
 
-            (new Status\InternalServerError(['message' => 'Error fetching facility details.', 'error' => $e->getMessage()]))->send();
+            (new Status\NotFound(['message' => $e->getMessage()]))->send();
+        } catch (Exceptions\BadRequest $e) {
+
+            (new Status\BadRequest(['message' => $e->getMessage()]))->send();
         }
     }
 
@@ -139,29 +148,12 @@ class FacilityController extends BaseController
 
             // Get data from the request body and decode
             $data = json_decode(file_get_contents("php://input"), true);
-
+            var_dump($data);
 
             // VALIDATIONS of the sent data
-            if (
-                // !isset($data['name'])
-                !isset($data['creation_date'])
-                || !isset($data['location_id'])
-                || strtotime($data['creation_date']) === false
-                || !isset($data['location_id'])
-                || !is_numeric($data['location_id'])
-                || $data['location_id'] < 1
-                || $data['location_id'] > 7
-            ) {
-                throw new Exceptions\BadRequest;
-            }
+            $this->validateFacilityData($data);
 
-            if (
-                !isset($data['name'])
-            ) {
-                throw new Exceptions\BadRequest;
-            }
-
-            // CREATE a Facility model
+            // CREATE using model
             $facility = new Facility(
                 $data['name'],
                 $data['creation_date'],
@@ -174,7 +166,9 @@ class FacilityController extends BaseController
                 'name' => $facility->getName(),
                 'location_id' => $facility->getLocationId()
             ];
-            $this->db->executeQuery($query, $bind);
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new Exceptions\InternalServerError;
+            }
             $existingFacility = $this->db->getResults();
             if ($existingFacility) {
                 throw new Exceptions\BadRequest;
@@ -202,7 +196,9 @@ class FacilityController extends BaseController
                 // Check if the tag already exists
                 $query = 'SELECT id FROM Tag WHERE name = :name';
                 $bind = ['name' => $tagName];
-                $this->db->executeQuery($query, $bind);
+                if (!$this->db->executeQuery($query, $bind)) {
+                    throw new Exceptions\InternalServerError;
+                }
                 $existingTag = $this->db->getResults();
 
                 // If the tag exists, get its ID. Otherwise, create a new tag.
@@ -239,116 +235,110 @@ class FacilityController extends BaseController
             // Rollback the transaction
             $this->db->rollBack();
             (new Status\BadRequest(['message' => $e->getMessage()]))->send();
-        } catch (Exceptions\InternalServerError $e) {
-
-            // Rollback the transaction
-            $this->db->rollBack();
-            (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
         }
     }
-
 
     // EDIT A FACILITY
     public function editFacility($facilityId)
     {
         try {
-            // Begin trasaction
+            // Begin transaction
             $this->db->beginTransaction();
 
-            // Check if the facility with the specified ID exists
-            $query = 'SELECT id FROM Facility WHERE id = :facility_id';
-            $bind = ['facility_id' => $facilityId];
-            $this->db->executeQuery($query, $bind);
-            $existingFacility = $this->db->getResults();
-
-            if (!$existingFacility) {
-                throw new \Exception('Facility with the specified ID does not exist.');
-            }
-
-            // Get data from the request body and decode
+            // Get data from the request body and decode it
             $data = json_decode(file_get_contents("php://input"), true);
 
-            // Validation of the sent data
-            if (!isset($data['name']) || !isset($data['creation_date']) || !isset($data['location_id'])) {
-                throw new \Exception('Required data missing.');
+            // VALIDATE the sent data
+            $this->validateFacilityData($data);
+            $this->validateFacilityId($facilityId);
+
+            // Create a Facility model instance and set its properties
+            $facility = new Facility($data['name'], $data['creation_date'], $data['location_id'], $data['tags']);
+
+            // Check if the facility exists
+            $query = 'SELECT id FROM Facility WHERE id = :facility_id';
+            $bind = ['facility_id' => $facilityId];
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new Exceptions\InternalServerError;
             }
-
-            // Check if the location_id exists in the Location table
-            $query = 'SELECT id FROM Location WHERE id = :location_id';
-            $bind = ['location_id' => $data['location_id']];
-            $this->db->executeQuery($query, $bind);
-            $existingLocation = $this->db->getResults();
-
-            if (!$existingLocation) {
-                throw new \Exception('Location with the specified does not exist.');
-            }
-
-            // Check if the creation_date is a correct format
-            if (isset($data['creation_date']) && strtotime($data['creation_date']) === false) {
-                throw new \Exception('Invalid Date format.');
+            $existingFacility = $this->db->getResults();
+            if (!$existingFacility) {
+                throw new Exceptions\BadRequest;
             }
 
             // Update the facility in the database
             $query = 'UPDATE Facility SET name = :name, creation_date = :creation_date, location_id = :location_id WHERE id = :facility_id';
             $bind = [
-                'name' => $data['name'],
-                'creation_date' => $data['creation_date'],
-                'location_id' => $data['location_id'],
+                'name' => $facility->getName(),
+                'creation_date' => $facility->getCreationDate(),
+                'location_id' => $facility->getLocationId(),
                 'facility_id' => $facilityId
             ];
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new \Exception('Error while updating the facility.');
+                throw new Exceptions\InternalServerError;
             }
 
-            // Remove existing tags associations for the facility
+            // Remove existing tag associations for this facility
             $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
             $bind = ['facility_id' => $facilityId];
-            $this->db->executeQuery($query, $bind);
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new Exceptions\InternalServerError;
+            }
 
-            // Check and handle tags
-            if (isset($data['tags']) && is_array($data['tags'])) {
-                foreach ($data['tags'] as $tag) {
+            // Handle tags if provided
+            if (!empty($facility->getTags())) {
+                foreach ($facility->getTags() as $tagName) {
 
-                    // Validation of tag data
-                    if (!isset($tag)) {
-                        throw new \Exception('Incomplete tag data.');
-                    }
-
-                    $tagName = $tag;
-
-                    // Check if the tag already exists
+                    // Get tag ID from database
                     $query = 'SELECT id FROM Tag WHERE name = :name';
                     $bind = ['name' => $tagName];
-                    $this->db->executeQuery($query, $bind);
+                    if (!$this->db->executeQuery($query, $bind)) {
+                        throw new Exceptions\InternalServerError;
+                    }
                     $existingTag = $this->db->getResults();
 
                     // If the tag exists, get its ID
                     if ($existingTag) {
                         $tagId = $existingTag[0]['id'];
                     } else {
-                        // Tag doesn't exist, return an error
-                        throw new \Exception('Tag does not exist.');
+                        // Tag does not exist create it
+                        $query = 'INSERT INTO Tag (name) VALUES (:name)';
+                        $bind = ['name' => $tagName];
+                        if (!$this->db->executeQuery($query, $bind)) {
+                            throw new Exceptions\InternalServerError;
+                        }
+
+                        // Get the ID of the new created tag
+                        $tagId = $this->db->getLastInsertedId();
                     }
 
                     // Create the association between the facility and the tag
                     $query = 'INSERT INTO Facility_Tag (facility_id, tag_id) VALUES (:facility_id, :tag_id)';
                     $bind = ['facility_id' => $facilityId, 'tag_id' => $tagId];
                     if (!$this->db->executeQuery($query, $bind)) {
-                        throw new \Exception('Error in associating facility and tag.');
+                        throw new Exceptions\InternalServerError;
                     }
                 }
             }
 
-            // Save transaction
-            $this->db->commit();;
+            // Commit the transaction
+            $this->db->commit();
 
+            // Send success response
             (new Status\Ok(['message' => 'Facility and tags updated successfully!']))->send();
-        } catch (\Exception $e) {
+        } catch (Exceptions\BadRequest $e) {
 
+            // Rollback 
+            $this->db->rollBack();
+            (new Status\BadRequest(['message' => $e->getMessage()]))->send();
+        } catch (Exceptions\InternalServerError $e) {
             // Rollback the transaction in case of an error
             $this->db->rollBack();
-
-            (new Status\InternalServerError(['message' => 'Error in updating facility and tags.', 'error' => $e->getMessage()]))->send();
+            (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
+        } catch (Exceptions\NotFound $e) {
+            // Rollback the transaction in case of an error
+            $this->db->rollBack();
+            (new Status\NotFound(['message' => $e->getMessage()]))->send();
         }
     }
 
@@ -356,43 +346,153 @@ class FacilityController extends BaseController
     public function deleteFacility($facilityId)
     {
         try {
+            // Begin transaction
             $this->db->beginTransaction();
+
+            // VALIDATE the sent data
+            $this->validateFacilityId($facilityId);
 
             // Check if the facility with the specified ID exists
             $query = 'SELECT id FROM Facility WHERE id = :id';
             $bind = ['id' => $facilityId];
-            $this->db->executeQuery($query, $bind);
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new Exceptions\InternalServerError;
+            }
             $existingFacility = $this->db->getResults();
 
             if (!$existingFacility) {
-                throw new \Exception('Facility does not exist.');
+                throw new Exceptions\NotFound;
             }
 
             // Delete the relationships between the facility and tags
             $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
             $bind = ['facility_id' => $facilityId];
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new \Exception('Error in deleting facility-tag relationships.');
+                throw new Exceptions\InternalServerError;
             }
 
             // Delete the facility
             $query = 'DELETE FROM Facility WHERE id = :id';
             $bind = ['id' => $facilityId];
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new \Exception('Error in deleting the facility.');
+                throw new Exceptions\InternalServerError;
             }
 
-            // Save transaction
+            // Commit the transaction
             $this->db->commit();
 
             (new Status\Ok(['message' => 'Facility and its associated tags successfully deleted!']))->send();
-        } catch (\Exception $e) {
+        } catch (Exceptions\BadRequest $e) {
 
-            // Rollback the transaction in case of an error
+            // Rollback
             $this->db->rollBack();
+            (new Status\BadRequest(['message' => $e->getMessage()]))->send();
+        } catch (Exceptions\InternalServerError $e) {
 
-            (new Status\InternalServerError(['message' => 'Error in deleting facility and tags.', 'error' => $e->getMessage()]))->send();
+            $this->db->rollBack();
+            (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
+        } catch (Exceptions\NotFound $e) {
+
+            $this->db->rollBack();
+            (new Status\NotFound(['message' => $e->getMessage()]))->send();
         }
     }
 
+    // SEARCH FACILITY
+    public function searchFacilities()
+    {
+        try {
+            // // Pagination, get data from client
+            // $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 8;
+            // $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+            // // Validate limit and page
+            // if ($limit < 1 || $limit > 100) {
+            //     throw new Exceptions\BadRequest;
+            // }
+            // if ($page < 1) {
+            //     throw new Exceptions\BadRequest;
+            // }
+
+            // $offset = ($page - 1) * $limit;
+
+
+            // Prendere i parametri dalla richiesta
+            $data = json_decode(file_get_contents("php://input"), true);
+            $bind = [];
+            $conditions = [];
+
+            $query = "SELECT DISTINCT f.* FROM Facility f 
+                  LEFT JOIN Facility_Tag ft ON f.id = ft.facility_id
+                  LEFT JOIN Tag t ON ft.tag_id = t.id
+                  LEFT JOIN Location l ON f.location_id = l.id";
+
+            // Se viene fornito il nome della struttura, aggiungilo alle condizioni
+            if (!empty($data['facility_name'])) {
+                $conditions[] = "f.name LIKE :facility_name";
+                $bind['facility_name'] = '%' . $data['facility_name'] . '%';
+            }
+
+            // Se viene fornito il nome del tag, aggiungilo alle condizioni
+            if (!empty($data['tag_name'])) {
+                $conditions[] = "t.name LIKE :tag_name";
+                $bind['tag_name'] = '%' . $data['tag_name'] . '%';
+            }
+
+            // Se viene fornita la città della località, aggiungila alle condizioni
+            if (!empty($data['city'])) {
+                $conditions[] = "l.city LIKE :city";
+                $bind['city'] = '%' . $data['city'] . '%';
+            }
+
+            // Se ci sono delle condizioni, aggiungile alla query
+            if ($conditions) {
+                $query .= ' WHERE ' . implode(' AND ', $conditions);
+            }
+
+            // Eseguire la query
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new \Exception('Errore nella ricerca delle strutture.');
+            }
+
+            $results = $this->db->getResults();
+
+            // Rispondere con i risultati
+            (new Status\Ok($results))->send();
+        } catch (\Exception $e) {
+            (new Status\InternalServerError(['message' => 'Errore nella ricerca.', 'error' => $e->getMessage()]))->send();
+        }
+    }
+
+
+    // VALIDATION FUNCTIONS
+    private function validateFacilityData($data)
+    {
+        // Check the required fields
+        if (!isset($data['name']) || !isset($data['creation_date']) || !isset($data['location_id'])) {
+            throw new Exceptions\BadRequest;
+        }
+
+        // Validate the date format
+        if (strtotime($data['creation_date']) === false) {
+            throw new Exceptions\BadRequest;
+        }
+
+        // Validate location_id
+        if (!is_numeric($data['location_id']) || $data['location_id'] < 1 || $data['location_id'] > 7) {
+            throw new Exceptions\BadRequest;
+        }
+
+        // Validate tags
+        if (!is_array($data['tags']) || count($data['tags']) > 5) {
+            throw new Exceptions\BadRequest;
+        }
+    }
+
+    private function validateFacilityId($facilityId)
+    {
+        if (!is_numeric($facilityId) || $facilityId <= 0) {
+            throw new Exceptions\BadRequest;
+        }
+    }
 }

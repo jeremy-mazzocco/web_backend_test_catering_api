@@ -3,13 +3,7 @@
 namespace App\Models;
 
 use App\Plugins\Di\Injectable;
-use PDO;
-use App\Plugins\Http\Response as Status;
 use App\Plugins\Http\Exceptions;
-use App\Plugins\Http\ApiException;
-use App\Plugins\Db\Db;
-use App\Models\Tag;
-
 
 
 class Facility extends Injectable
@@ -27,6 +21,7 @@ class Facility extends Injectable
         $this->setTags($tags);
     }
 
+    // name
     public function getName()
     {
         return $this->name;
@@ -34,12 +29,18 @@ class Facility extends Injectable
 
     public function setName($name)
     {
-        if (!is_string($name) || empty($name)) {
-            throw new \Exception("Name must be a non-empty string");
+        if (!is_string($name)) {
+            throw new Exceptions\BadRequest;
         }
+
+        if (empty($name)) {
+            throw new Exceptions\NotFound;
+        }
+
         $this->name = $name;
     }
 
+    // date
     public function getCreationDate()
     {
         return $this->creation_date;
@@ -50,16 +51,17 @@ class Facility extends Injectable
         $date = \DateTime::createFromFormat('Y-m-d', $creation_date);
 
         if (!$date || $date->format('Y-m-d') !== $creation_date) {
-            throw new \Exception("Empty date or invalid date format");
+            throw new Exceptions\BadRequest;
         }
 
         if (empty($creation_date)) {
-            throw new \Exception("Creation date cannot be empty");
+            throw new Exceptions\NotFound;
         }
 
         $this->creation_date = $creation_date;
     }
 
+    // location
     public function getLocationId()
     {
         return $this->location_id;
@@ -67,19 +69,30 @@ class Facility extends Injectable
 
     public function setLocationId($location_id)
     {
-        if (!is_int($location_id) || ($location_id < 1 || $location_id > 7)) {
-            throw new \Exception("Location is not present in the database");
+        if (!is_numeric($location_id) || ($location_id < 1 || $location_id > 7)) {
+            throw new Exceptions\BadRequest;
         }
+
+        if (empty($location_id)) {
+            throw new Exceptions\NotFound;
+        }
+
         $this->location_id = $location_id;
     }
 
+    // tag
     public function getTags()
     {
         return $this->tags;
     }
 
     public function setTags($tags)
-    {     
+    {
+
+        if (!is_array($tags['tags']) || count($tags['tags']) > 5) {
+            throw new Exceptions\BadRequest;
+        }
+
         $this->tags = $tags;
     }
 }
