@@ -2,7 +2,8 @@
 
 namespace App\Plugins\Http;
 
-abstract class Status implements IStatus {
+abstract class Status implements IStatus
+{
     /**
      * The status code
      * @var int
@@ -34,7 +35,8 @@ abstract class Status implements IStatus {
      * @param string $contentType
      * @param mixed $body
      */
-    public function __construct(int $code, string $message, string $contentType, $body = []) {
+    public function __construct(int $code, string $message, string $contentType, $body = [])
+    {
         $this->code = $code;
         $this->contentType = $contentType;
         $this->body = $body;
@@ -45,7 +47,8 @@ abstract class Status implements IStatus {
      * Function to retrieve the status code
      * @return int
      */
-    public function getCode(): int {
+    public function getCode(): int
+    {
         return $this->code;
     }
 
@@ -53,7 +56,8 @@ abstract class Status implements IStatus {
      * Function to retrieve the message of the status code
      * @return string
      */
-    public function getMessage(): string {
+    public function getMessage(): string
+    {
         return $this->message;
     }
 
@@ -61,7 +65,8 @@ abstract class Status implements IStatus {
      * Function to retrieve the content-type
      * @return string
      */
-    public function getContentType(): string {
+    public function getContentType(): string
+    {
         return $this->contentType;
     }
 
@@ -70,7 +75,8 @@ abstract class Status implements IStatus {
      * @param $body
      * @return $this
      */
-    public function body($body) {
+    public function body($body)
+    {
         $this->body = $body;
         return $this;
     }
@@ -78,7 +84,8 @@ abstract class Status implements IStatus {
     /**
      * Function to output this response
      */
-    public function send() {
+    public function send()
+    {
         $statusHeader = 'HTTP/1.1 ' . $this->getCode() . ' ' . $this->getMessage();
         $contentTypeHeader = 'Content-type: ' . $this->getContentType();
         header($statusHeader);
