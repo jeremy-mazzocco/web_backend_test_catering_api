@@ -17,6 +17,11 @@ $router->get('/facility/{id}', App\Controllers\FacilityController::class . '@get
 // Edit a facility
 $router->put('/facility/{id}', App\Controllers\FacilityController::class . '@editFacility');
 
+// Delete a facilty
+$router->delete('/facility/{id}', App\Controllers\FacilityController::class . '@deleteFacility');
+
+// Search Facility with parameters
+$router->post('/search/facilities', App\Controllers\FacilityController::class . '@searchFacilities');
 
 
 
