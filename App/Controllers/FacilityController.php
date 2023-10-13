@@ -148,7 +148,6 @@ class FacilityController extends BaseController
 
             // Get data from the request body and decode
             $data = json_decode(file_get_contents("php://input"), true);
-            var_dump($data);
 
             // VALIDATIONS of the sent data
             $this->validateFacilityData($data);
@@ -416,39 +415,48 @@ class FacilityController extends BaseController
 
             $offset = ($page - 1) * $limit;
 
-            // Get parameters from the request
+            // Get parameters from the request body
             $data = json_decode(file_get_contents("php://input"), true);
             $bind = [];
             $conditions = [];
 
-            // Query to join all data
+            var_dump($data);
+
+            // VALIDATIONS of the sent data
+            $this->validateFacilityDataSearch($data);
+
+
+            // Query to join all tables
             $query = "SELECT DISTINCT Facility.* FROM Facility 
-              LEFT JOIN Facility_Tag ON Facility.id = Facility_Tag.facility_id
-              LEFT JOIN Tag ON Facility_Tag.tag_id = Tag.id
-              LEFT JOIN Location ON Facility.location_id = Location.id";
+                    LEFT JOIN Facility_Tag ON Facility.id = Facility_Tag.facility_id
+                    LEFT JOIN Tag ON Facility_Tag.tag_id = Tag.id
+                    LEFT JOIN Location ON Facility.location_id = Location.id";
 
             // If a facility name is provided, add it to the conditions
-            if (!empty($data['facility_name'])) {
-                $conditions[] = "Facility.name LIKE :facility_name";
-                $bind['facility_name'] = '%' . $data['facility_name'] . '%';
+            if (!empty($data['name'])) {
+                $conditions[] = "Facility.name LIKE :name";
+                $bind['name'] = '%' . $data['name'] . '%';
             }
 
-            // If a tag nae is provided, add it to the conditions
-            if (!empty($data['tag_name'])) {
-                $conditions[] = "Tag.name LIKE :tag_name";
-                $bind['tag_name'] = '%' . $data['tag_name'] . '%';
+            // If a tag name is provided, add it to the conditions
+            if (!empty($data['tags'])) {
+                $conditions[] = "Tag.name LIKE :tags";
+                $bind['tags'] = '%' . $data['tags'] . '%';
             }
 
             // If a city is provided, add it to the conditions
-            if (!empty($data['city'])) {
-                $conditions[] = "Location.city LIKE :city";
-                $bind['city'] = '%' . $data['city'] . '%';
+            if (!empty($data['location'])) {
+                $conditions[] = "Location.city LIKE :location";
+                $bind['location'] = '%' . $data['location'] . '%';
             }
 
-            // If there are any conditions, append them to the query
+            // If there are any conditions, attach to the query
             if ($conditions) {
                 $query .= ' WHERE ' . implode(' AND ', $conditions);
             }
+
+            // Add pagination to the query
+            $query .= " LIMIT $limit OFFSET $offset";
 
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError();
@@ -457,6 +465,22 @@ class FacilityController extends BaseController
             $results = $this->db->getResults();
             if (!$results) {
                 throw new Exceptions\BadRequest;
+            }
+
+            // Associate the tags to the facility
+            foreach ($results as &$facility) {
+                $facilityId = $facility['id'];
+                $tagQuery = 'SELECT Tag.name FROM Tag
+                             INNER JOIN Facility_Tag ON Tag.id = Facility_Tag.tag_id
+                             WHERE Facility_Tag.facility_id = :facility_id';
+                $tagBind = ['facility_id' => $facilityId];
+
+                if ($this->db->executeQuery($tagQuery, $tagBind)) {
+                    $tags = $this->db->getResults();
+                    $facility['tags'] = array_column($tags, 'name');
+                } else {
+                    throw new Exceptions\InternalServerError();
+                }
             }
 
             (new Status\Ok($results))->send();
@@ -470,8 +494,9 @@ class FacilityController extends BaseController
     }
 
 
-
     // VALIDATION FUNCTIONS
+
+    // Validation data from user
     private function validateFacilityData($data)
     {
         // Check the required fields
@@ -479,26 +504,44 @@ class FacilityController extends BaseController
             throw new Exceptions\BadRequest;
         }
 
+        // Validate the name lenght and type
+        if (isset($data['nome'])) {
+            if (!is_string($data['nome']) || strlen($data['nome']) > 255) {
+                throw new Exceptions\BadRequest;
+            }
+        }
+
         // Validate the date format
-        if (strtotime($data['creation_date']) === false) {
+        $creationDate = $data['creation_date'];
+        $date = \DateTime::createFromFormat('Y-m-d', $creationDate);
+
+        if (!$date || $date->format('Y-m-d') !== $creationDate) {
             throw new Exceptions\BadRequest;
         }
 
-        // Validate location_id
+        // Validate location_id (if you create a new location the validation need to be changed! )
         if (!is_numeric($data['location_id']) || $data['location_id'] < 1 || $data['location_id'] > 7) {
             throw new Exceptions\BadRequest;
         }
 
-        // Validate tags
-        if (!is_array($data['tags']) || count($data['tags']) > 5) {
-            throw new Exceptions\BadRequest;
+        // Validate tags (validation let user to create/edit a facility with maximum 5 tags)
+        if (isset($data['tags'])) {
+            if (is_numeric($data['tags']) || (!is_array($data['tags']) || count($data['tags']) > 5)) {
+                throw new Exceptions\BadRequest;
+            }
         }
     }
 
+
+    // Validation ID
     private function validateFacilityId($facilityId)
     {
         if (!is_numeric($facilityId) || $facilityId <= 0) {
             throw new Exceptions\BadRequest;
         }
+    }
+
+    private function validateFacilityDataSearch($data)
+    {
     }
 }

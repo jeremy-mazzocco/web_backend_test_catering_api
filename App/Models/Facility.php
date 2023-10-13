@@ -29,7 +29,7 @@ class Facility extends Injectable
 
     public function setName($name)
     {
-        if (!is_string($name)) {
+        if (!is_string($name) || strlen($name) > 255) {
             throw new Exceptions\BadRequest;
         }
 
@@ -80,7 +80,7 @@ class Facility extends Injectable
         $this->location_id = $location_id;
     }
 
-    // tag
+    // tags
     public function getTags()
     {
         return $this->tags;
@@ -88,8 +88,8 @@ class Facility extends Injectable
 
     public function setTags($tags)
     {
-
-        if (!is_array($tags['tags']) || count($tags['tags']) > 5) {
+        // validation let user to create/edit a facility with maximum 5 tags
+        if (!is_array($tags) || count($tags) > 5) {
             throw new Exceptions\BadRequest;
         }
 

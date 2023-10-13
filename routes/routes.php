@@ -2,11 +2,14 @@
 
 /** @var Bramus\Router\Router $router */
 
-// Define routes here
+
 
 
 // Show all facilities
 $router->get('/', App\Controllers\FacilityController::class . '@getAllFacilities');
+
+// Search Facility with parameters
+$router->post('/search/facilities', App\Controllers\FacilityController::class . '@searchFacilities');
 
 // Create a facility
 $router->post('/facility', App\Controllers\FacilityController::class . '@createFacility');
@@ -19,12 +22,6 @@ $router->put('/facility/{id}', App\Controllers\FacilityController::class . '@edi
 
 // Delete a facilty
 $router->delete('/facility/{id}', App\Controllers\FacilityController::class . '@deleteFacility');
-
-// Search Facility with parameters
-$router->post('/search/facilities', App\Controllers\FacilityController::class . '@searchFacilities');
-
-
-
 
 
 
