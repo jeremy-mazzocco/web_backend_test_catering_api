@@ -83,7 +83,6 @@ class FacilityController extends BaseController
                 }
             }
 
-            // Return the result
             (new Status\Ok($facilities))->send();
         } catch (Exceptions\BadRequest $e) {
 
@@ -104,11 +103,11 @@ class FacilityController extends BaseController
             // Get the facility from the database
             $query = 'SELECT * FROM Facility WHERE id = :id';
             $bind = ['id' => $facilityId];
-            $this->db->executeQuery($query, $bind);
-            $facility = $this->db->getResults();
 
-            // Check if the facility is found
-            if (empty($facility)) {
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new Exceptions\InternalServerError;
+            }
+            if (!$facility = $this->db->getResults()) {
                 throw new Exceptions\NotFound;
             }
             $facility = $facility[0];
@@ -116,11 +115,11 @@ class FacilityController extends BaseController
             // Get the location of the facility
             $query = 'SELECT * FROM Location WHERE id = :location_id';
             $bind = ['location_id' => $facility['location_id']];
-            $this->db->executeQuery($query, $bind);
-            $location = $this->db->getResults();
 
-            // Check if the location is found
-            if (empty($location)) {
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new Exceptions\InternalServerError;
+            }
+            if (!$location = $this->db->getResults()) {
                 throw new Exceptions\NotFound;
             }
             $facility['location'] = $location[0];
@@ -134,7 +133,9 @@ class FacilityController extends BaseController
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
-            $tags = $this->db->getResults();
+            if (!$tags = $this->db->getResults()) {
+                throw new Exceptions\NotFound;
+            }
             $facility['tags'] = $tags;
 
             // Fetch employees associated with the current facility
@@ -143,12 +144,14 @@ class FacilityController extends BaseController
                WHERE facility_id = :id';
             $bind = ['id' => $facility['id']];
 
-            if ($this->db->executeQuery($query, $bind)) {
-                $employees = $this->db->getResults();
-                $facility['employees'] = $employees;
-            } else {
+            if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError();
             }
+            if (!$employees = $this->db->getResults()) {
+                throw new Exceptions\NotFound;
+            }
+            $facility['employees'] = $employees;
+
 
             (new Status\Ok($facility))->send();
         } catch (Exceptions\InternalServerError $e) {
@@ -189,11 +192,11 @@ class FacilityController extends BaseController
                 'name' => $facility->getName(),
                 'location_id' => $facility->getLocationId()
             ];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
-            $existingFacility = $this->db->getResults();
-            if ($existingFacility) {
+            if ($existingFacility = $this->db->getResults()) {
                 throw new Exceptions\BadRequest;
             }
 
@@ -204,6 +207,7 @@ class FacilityController extends BaseController
                 'creation_date' => $facility->getCreationDate(),
                 'location_id' => $facility->getLocationId()
             ];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
@@ -219,25 +223,25 @@ class FacilityController extends BaseController
                 // Check if the tag already exists
                 $query = 'SELECT id FROM Tag WHERE name = :name';
                 $bind = ['name' => $tagName];
+
                 if (!$this->db->executeQuery($query, $bind)) {
                     throw new Exceptions\InternalServerError;
                 }
-                $existingTag = $this->db->getResults();
 
-                // If the tag exists, get its ID. Otherwise, create a new tag.
-                if ($existingTag) {
+                // If the tag exists, get its ID
+                if ($existingTag = $this->db->getResults()) {
                     $tagId = $existingTag[0]['id'];
                 } else {
-                    // Tag doesn't exist, so create it
+                    // if Tag doesn't exist create it
                     $query = 'INSERT INTO Tag (name) VALUES (:name)';
                     $bind = ['name' => $tagName];
 
                     if (!$this->db->executeQuery($query, $bind)) {
                         throw new Exceptions\InternalServerError;
                     }
-
-                    // Get the ID of the newly created tag
-                    $tagId = $this->db->getLastInsertedId();
+                    if (!$tagId = $this->db->getLastInsertedId()) {
+                        throw new Exceptions\BadRequest;
+                    }
                 }
 
                 // Create the association between the facility and the tag
@@ -285,7 +289,6 @@ class FacilityController extends BaseController
             (new Status\Created(['message' => 'Facility created successfully!']))->send();
         } catch (Exceptions\BadRequest $e) {
 
-            // Rollback the transaction
             $this->db->rollBack();
             (new Status\BadRequest(['message' => $e->getMessage()]))->send();
         }
@@ -311,11 +314,11 @@ class FacilityController extends BaseController
             // Check if the facility exists
             $query = 'SELECT id FROM Facility WHERE id = :facility_id';
             $bind = ['facility_id' => $facilityId];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
-            $existingFacility = $this->db->getResults();
-            if (!$existingFacility) {
+            if (!$existingFacility = $this->db->getResults()) {
                 throw new Exceptions\BadRequest;
             }
 
@@ -327,6 +330,7 @@ class FacilityController extends BaseController
                 'location_id' => $facility->getLocationId(),
                 'facility_id' => $facilityId
             ];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
@@ -334,6 +338,7 @@ class FacilityController extends BaseController
             // Remove existing tag associations for this facility
             $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
             $bind = ['facility_id' => $facilityId];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
@@ -345,6 +350,7 @@ class FacilityController extends BaseController
                     // Get tag ID from database
                     $query = 'SELECT id FROM Tag WHERE name = :name';
                     $bind = ['name' => $tagName];
+
                     if (!$this->db->executeQuery($query, $bind)) {
                         throw new Exceptions\InternalServerError;
                     }
@@ -370,6 +376,7 @@ class FacilityController extends BaseController
                     // Create the association between the facility and the tag
                     $query = 'INSERT INTO Facility_Tag (facility_id, tag_id) VALUES (:facility_id, :tag_id)';
                     $bind = ['facility_id' => $facilityId, 'tag_id' => $tagId];
+
                     if (!$this->db->executeQuery($query, $bind)) {
                         throw new Exceptions\InternalServerError;
                     }
@@ -397,6 +404,7 @@ class FacilityController extends BaseController
                 // Check if the employee exists for the given email
                 $query = 'SELECT id FROM Employee WHERE email = :email';
                 $bind = ['email' => $employeeData['email']];
+
                 if (!$this->db->executeQuery($query, $bind)) {
                     throw new Exceptions\InternalServerError;
                 }
@@ -413,6 +421,7 @@ class FacilityController extends BaseController
                     'facility_id' => $employee->getFacilityId(),
                     'email' => $employee->getEmail()
                 ];
+
                 if (!$this->db->executeQuery($query, $bind)) {
                     throw new Exceptions\InternalServerError;
                 }
@@ -422,7 +431,6 @@ class FacilityController extends BaseController
             // Commit transaction
             $this->db->commit();
 
-            // Send success response
             (new Status\Ok(['message' => 'Facility updated successfully!']))->send();
         } catch (Exceptions\BadRequest $e) {
 
@@ -439,8 +447,6 @@ class FacilityController extends BaseController
         }
     }
 
-
-
     // DELETE A FACILITY
     public function deleteFacility($facilityId)
     {
@@ -454,18 +460,18 @@ class FacilityController extends BaseController
             // Check if the facility with the specified ID exists
             $query = 'SELECT id FROM Facility WHERE id = :id';
             $bind = ['id' => $facilityId];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
-            $existingFacility = $this->db->getResults();
-
-            if (!$existingFacility) {
+            if (!$existingFacility = $this->db->getResults()) {
                 throw new Exceptions\NotFound;
             }
 
             // Delete the employees associated with the facility
             $query = 'DELETE FROM Employee WHERE facility_id = :facility_id';
             $bind = ['facility_id' => $facilityId];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
@@ -473,6 +479,7 @@ class FacilityController extends BaseController
             // Delete the relationships between the facility and tags
             $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
             $bind = ['facility_id' => $facilityId];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
@@ -480,6 +487,7 @@ class FacilityController extends BaseController
             // Delete the facility
             $query = 'DELETE FROM Facility WHERE id = :id';
             $bind = ['id' => $facilityId];
+
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
@@ -504,7 +512,6 @@ class FacilityController extends BaseController
         }
     }
 
-
     // SEARCH FACILITY
     public function searchFacilities()
     {
@@ -528,11 +535,9 @@ class FacilityController extends BaseController
             $bind = [];
             $conditions = [];
 
-            var_dump($data);
 
             // VALIDATIONS of the sent data
             $this->validateFacilityDataSearch($data);
-
 
             // Query to join all tables
             $query = "SELECT DISTINCT Facility.* FROM Facility 
@@ -569,9 +574,7 @@ class FacilityController extends BaseController
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError();
             }
-
-            $results = $this->db->getResults();
-            if (!$results) {
+            if (!$results = $this->db->getResults()) {
                 throw new Exceptions\BadRequest;
             }
 
@@ -613,9 +616,9 @@ class FacilityController extends BaseController
             throw new Exceptions\BadRequest;
         }
 
-        // Validate the name lenght and type
-        if (isset($data['nome'])) {
-            if (!is_string($data['nome']) || strlen($data['nome']) > 255) {
+        // Validate the name lenght and string
+        if (isset($data['name'])) {
+            if (!is_string($data['name']) || strlen($data['name']) > 255) {
                 throw new Exceptions\BadRequest;
             }
         }
@@ -673,12 +676,20 @@ class FacilityController extends BaseController
     // Validation ID
     private function validateFacilityId($facilityId)
     {
-        if (!is_numeric($facilityId) || $facilityId <= 0) {
-            throw new Exceptions\BadRequest;
+        if (isset($facilityId)) {
+            if (!is_numeric($facilityId) || $facilityId <= 0) {
+                throw new Exceptions\BadRequest;
+            }
         }
     }
 
     private function validateFacilityDataSearch($data)
     {
+        foreach ($data as $result) {
+
+            if (strlen($result) > 255 ) {
+                throw new Exceptions\BadRequest;
+            }
+        }
     }
 }
