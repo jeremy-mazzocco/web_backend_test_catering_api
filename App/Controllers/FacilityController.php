@@ -252,20 +252,26 @@ class FacilityController extends BaseController
             // Create the new employees
             foreach ($data['employees'] as $employeeData) {
 
+                if (!isset($employeeData['email'])) {
+                    throw new Exceptions\BadRequest;
+                }
+
                 $employee = new Employee(
                     $employeeData['first_name'],
                     $employeeData['last_name'],
                     $employeeData['role'],
-                    $facilityId
+                    $facilityId,
+                    $employeeData['email']
                 );
 
                 // Insert the employee into the database
-                $query = 'INSERT INTO Employee (first_name, last_name, role, facility_id) VALUES (:first_name, :last_name, :role, :facility_id)';
+                $query = 'INSERT INTO Employee (first_name, last_name, role, facility_id, email) VALUES (:first_name, :last_name, :role, :facility_id, :email)';
                 $bind = [
                     'first_name' => $employee->getFirstName(),
                     'last_name' => $employee->getLastName(),
                     'role' => $employee->getRole(),
-                    'facility_id' => $employee->getFacilityId()
+                    'facility_id' => $employee->getFacilityId(),
+                    'email' => $employee->getEmail()
                 ];
 
                 if (!$this->db->executeQuery($query, $bind)) {
@@ -276,7 +282,7 @@ class FacilityController extends BaseController
             // Save transaction
             $this->db->commit();
 
-            (new Status\Created(['message' => 'Facility and tags created successfully!']))->send();
+            (new Status\Created(['message' => 'Facility created successfully!']))->send();
         } catch (Exceptions\BadRequest $e) {
 
             // Rollback the transaction
@@ -342,7 +348,9 @@ class FacilityController extends BaseController
                     if (!$this->db->executeQuery($query, $bind)) {
                         throw new Exceptions\InternalServerError;
                     }
-                    $existingTag = $this->db->getResults();
+                    if (!$existingTag = $this->db->getResults()) {
+                        throw new Exceptions\NotFound();
+                    }
 
                     // If the tag exists, get its ID
                     if ($existingTag) {
@@ -368,14 +376,56 @@ class FacilityController extends BaseController
                 }
             }
 
-            // Commit the transaction
+            // Handle employee edit
+
+            foreach ($data['employees'] as $employeeData) {
+
+                // Check if email is set and not empty
+                if (!isset($employeeData['email']) || empty($employeeData['email'])) {
+                    throw new Exceptions\BadRequest;
+                }
+
+                // Create an Employee model instance
+                $employee = new Employee(
+                    $employeeData['first_name'],
+                    $employeeData['last_name'],
+                    $employeeData['role'],
+                    $facilityId,
+                    $employeeData['email']
+                );
+
+                // Check if the employee exists for the given email
+                $query = 'SELECT id FROM Employee WHERE email = :email';
+                $bind = ['email' => $employeeData['email']];
+                if (!$this->db->executeQuery($query, $bind)) {
+                    throw new Exceptions\InternalServerError;
+                }
+                if (!$existingEmployee = $this->db->getResults()) {
+                    throw new Exceptions\NotFound();
+                }
+
+                // Update the existing employee in the database
+                $query = 'UPDATE Employee SET first_name = :first_name, last_name = :last_name, role = :role, facility_id = :facility_id WHERE email = :email';
+                $bind = [
+                    'first_name' => $employee->getFirstName(),
+                    'last_name' => $employee->getLastName(),
+                    'role' => $employee->getRole(),
+                    'facility_id' => $employee->getFacilityId(),
+                    'email' => $employee->getEmail()
+                ];
+                if (!$this->db->executeQuery($query, $bind)) {
+                    throw new Exceptions\InternalServerError;
+                }
+            }
+
+
+            // Commit transaction
             $this->db->commit();
 
             // Send success response
-            (new Status\Ok(['message' => 'Facility and tags updated successfully!']))->send();
+            (new Status\Ok(['message' => 'Facility updated successfully!']))->send();
         } catch (Exceptions\BadRequest $e) {
 
-            // Rollback 
             $this->db->rollBack();
             (new Status\BadRequest(['message' => $e->getMessage()]))->send();
         } catch (Exceptions\InternalServerError $e) {
@@ -388,6 +438,8 @@ class FacilityController extends BaseController
             (new Status\NotFound(['message' => $e->getMessage()]))->send();
         }
     }
+
+
 
     // DELETE A FACILITY
     public function deleteFacility($facilityId)
@@ -411,6 +463,13 @@ class FacilityController extends BaseController
                 throw new Exceptions\NotFound;
             }
 
+            // Delete the employees associated with the facility
+            $query = 'DELETE FROM Employee WHERE facility_id = :facility_id';
+            $bind = ['facility_id' => $facilityId];
+            if (!$this->db->executeQuery($query, $bind)) {
+                throw new Exceptions\InternalServerError;
+            }
+
             // Delete the relationships between the facility and tags
             $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
             $bind = ['facility_id' => $facilityId];
@@ -428,7 +487,7 @@ class FacilityController extends BaseController
             // Commit the transaction
             $this->db->commit();
 
-            (new Status\Ok(['message' => 'Facility and its associated tags successfully deleted!']))->send();
+            (new Status\Ok(['message' => 'Facility and its associated tags and employees successfully deleted!']))->send();
         } catch (Exceptions\BadRequest $e) {
 
             // Rollback
@@ -444,6 +503,7 @@ class FacilityController extends BaseController
             (new Status\NotFound(['message' => $e->getMessage()]))->send();
         }
     }
+
 
     // SEARCH FACILITY
     public function searchFacilities()
@@ -601,10 +661,14 @@ class FacilityController extends BaseController
                 if (!isset($employee['role']) || !is_string($employee['role']) || strlen($employee['role']) > 255) {
                     throw new Exceptions\BadRequest;
                 }
+
+                // Validate email
+                if (!isset($employee['email']) || !filter_var($employee['email'], FILTER_VALIDATE_EMAIL) || strlen($employee['email']) > 255) {
+                    throw new Exceptions\BadRequest;
+                }
             }
         }
     }
-
 
     // Validation ID
     private function validateFacilityId($facilityId)

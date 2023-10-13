@@ -11,13 +11,15 @@ class Employee extends Injectable
     private $last_name;
     private $role;
     private $facility_id;
+    private $email;
 
-    public function __construct($first_name, $last_name, $role, $facility_id)
+    public function __construct($first_name, $last_name, $role, $facility_id, $email)
     {
         $this->setFirstName($first_name);
         $this->setLastName($last_name);
         $this->setRole($role);
         $this->setFacilityId($facility_id);
+        $this->setEmail($email);
     }
 
     // first_name
@@ -94,5 +96,20 @@ class Employee extends Injectable
         }
 
         $this->facility_id = $facility_id;
+    }
+
+    // email
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
+    public function setEmail($email)
+    {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 255) {
+            throw new Exceptions\BadRequest;
+        }
+
+        $this->email = $email;
     }
 }
