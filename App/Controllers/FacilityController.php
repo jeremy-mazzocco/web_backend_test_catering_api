@@ -67,6 +67,19 @@ class FacilityController extends BaseController
                 } else {
                     throw new Exceptions\InternalServerError();
                 }
+
+                // Fetch employees associated with the current facility
+                $query = 'SELECT * 
+                    FROM Employee  
+                    WHERE facility_id = :id';
+                $bind = ['id' => $facility['id']];
+
+                if ($this->db->executeQuery($query, $bind)) {
+                    $employees = $this->db->getResults();
+                    $facility['employees'] = $employees;
+                } else {
+                    throw new Exceptions\InternalServerError();
+                }
             }
 
             // Return the result
@@ -109,7 +122,6 @@ class FacilityController extends BaseController
             if (empty($location)) {
                 throw new Exceptions\NotFound;
             }
-
             $facility['location'] = $location[0];
 
             // Get the tags associated with the facility
@@ -121,10 +133,21 @@ class FacilityController extends BaseController
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError;
             }
-
             $tags = $this->db->getResults();
             $facility['tags'] = $tags;
 
+            // Fetch employees associated with the current facility
+            $query = 'SELECT * 
+               FROM Employee  
+               WHERE facility_id = :id';
+            $bind = ['id' => $facility['id']];
+
+            if ($this->db->executeQuery($query, $bind)) {
+                $employees = $this->db->getResults();
+                $facility['employees'] = $employees;
+            } else {
+                throw new Exceptions\InternalServerError();
+            }
 
             (new Status\Ok($facility))->send();
         } catch (Exceptions\InternalServerError $e) {
