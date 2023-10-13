@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Employee;
 use App\Models\Facility;
 use App\Plugins\Http\Response as Status;
 use App\Plugins\Http\Exceptions;
@@ -242,6 +243,30 @@ class FacilityController extends BaseController
                 // Create the association between the facility and the tag
                 $query = 'INSERT INTO Facility_Tag (facility_id, tag_id) VALUES (:facility_id, :tag_id)';
                 $bind = ['facility_id' => $facilityId, 'tag_id' => $tagId];
+
+                if (!$this->db->executeQuery($query, $bind)) {
+                    throw new Exceptions\InternalServerError;
+                }
+            }
+
+            // Create the new employees
+            foreach ($data['employees'] as $employeeData) {
+
+                $employee = new Employee(
+                    $employeeData['first_name'],
+                    $employeeData['last_name'],
+                    $employeeData['role'],
+                    $facilityId
+                );
+
+                // Insert the employee into the database
+                $query = 'INSERT INTO Employee (first_name, last_name, role, facility_id) VALUES (:first_name, :last_name, :role, :facility_id)';
+                $bind = [
+                    'first_name' => $employee->getFirstName(),
+                    'last_name' => $employee->getLastName(),
+                    'role' => $employee->getRole(),
+                    'facility_id' => $employee->getFacilityId()
+                ];
 
                 if (!$this->db->executeQuery($query, $bind)) {
                     throw new Exceptions\InternalServerError;
@@ -517,7 +542,8 @@ class FacilityController extends BaseController
     }
 
 
-    // VALIDATION FUNCTIONS
+
+    // VALIDATION FUNCTIONS:
 
     // Validation data from user
     private function validateFacilityData($data)
@@ -551,6 +577,30 @@ class FacilityController extends BaseController
         if (isset($data['tags'])) {
             if (is_numeric($data['tags']) || (!is_array($data['tags']) || count($data['tags']) > 5)) {
                 throw new Exceptions\BadRequest;
+            }
+        }
+
+        // Validate employees data
+        if (isset($data['employees'])) {
+            if (!is_array($data['employees'])) {
+                throw new Exceptions\BadRequest;
+            }
+
+            foreach ($data['employees'] as $employee) {
+                // Validate employee's first name
+                if (!isset($employee['first_name']) || !is_string($employee['first_name']) || strlen($employee['first_name']) > 255) {
+                    throw new Exceptions\BadRequest;
+                }
+
+                // Validate employee's last name
+                if (!isset($employee['last_name']) || !is_string($employee['last_name']) || strlen($employee['last_name']) > 255) {
+                    throw new Exceptions\BadRequest;
+                }
+
+                // Validate employee's role
+                if (!isset($employee['role']) || !is_string($employee['role']) || strlen($employee['role']) > 255) {
+                    throw new Exceptions\BadRequest;
+                }
             }
         }
     }
