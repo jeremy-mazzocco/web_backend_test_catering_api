@@ -4,9 +4,8 @@
 
 
 
-
 // Show all facilities
-$router->get('/', App\Controllers\FacilityController::class . '@getAllFacilities');
+$router->get('/facilities', App\Controllers\FacilityController::class . '@getAllFacilities');
 
 // Search Facility with parameters
 $router->post('/search/facilities', App\Controllers\FacilityController::class . '@searchFacilities');
