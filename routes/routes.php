@@ -2,26 +2,29 @@
 
 /** @var Bramus\Router\Router $router */
 
+// Test routes
+// $router->get('/', App\Controllers\IndexController::class . '@test');
 
+$router->get('/test', App\Controllers\IndexController::class . '@test');
 
-// Show all facilities
+// Get all facilities
 $router->get('/facilities', App\Controllers\FacilityController::class . '@getAllFacilities');
 
-// Search Facility with parameters
+// Search
 $router->post('/search/facilities', App\Controllers\FacilityController::class . '@searchFacilities');
 
-// Create a facility
+// Create
 $router->post('/facility', App\Controllers\FacilityController::class . '@createFacility');
 
-// Show one facility
+// Get one facility
 $router->get('/facility/{id}', App\Controllers\FacilityController::class . '@getFacilityById');
 
-// Edit a facility
+// Edit
 $router->put('/facility/{id}', App\Controllers\FacilityController::class . '@editFacility');
 
-// Delete a facilty
+// Delete
 $router->delete('/facility/{id}', App\Controllers\FacilityController::class . '@deleteFacility');
 
 
 
-// $router->get('/', App\Controllers\IndexController::class . '@test');
+

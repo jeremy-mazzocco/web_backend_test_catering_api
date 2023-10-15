@@ -31,11 +31,11 @@ class Employee extends Injectable
     public function setFirstName($first_name)
     {
         if (!is_string($first_name) || strlen($first_name) > 255) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's first name must be a string and less than 256 characters."]);
         }
 
         if (empty($first_name)) {
-            throw new Exceptions\NotFound;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert name']);
         }
 
         $this->first_name = $first_name;
@@ -50,11 +50,11 @@ class Employee extends Injectable
     public function setLastName($last_name)
     {
         if (!is_string($last_name) || strlen($last_name) > 255) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's last name must be a string and less than 256 characters."]);
         }
 
         if (empty($last_name)) {
-            throw new Exceptions\NotFound;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert last name']);
         }
 
         $this->last_name = $last_name;
@@ -69,11 +69,11 @@ class Employee extends Injectable
     public function setRole($role)
     {
         if (!is_string($role) || strlen($role) > 255) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's role must be a string and less than 256 characters."]);
         }
 
         if (empty($role)) {
-            throw new Exceptions\NotFound;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert role']);
         }
 
         $this->role = $role;
@@ -88,11 +88,11 @@ class Employee extends Injectable
     public function setFacilityId($facility_id)
     {
         if (!is_numeric($facility_id) || $facility_id <= 0) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's facility id must be a string and less than 256 characters."]);
         }
 
         if (empty($facility_id)) {
-            throw new Exceptions\NotFound;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert facility id']);
         }
 
         $this->facility_id = $facility_id;
@@ -107,7 +107,11 @@ class Employee extends Injectable
     public function setEmail($email)
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 255) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Must to be an email and less than 256 characters."]);
+        }
+
+        if (empty($email)) {
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert email']);
         }
 
         $this->email = $email;

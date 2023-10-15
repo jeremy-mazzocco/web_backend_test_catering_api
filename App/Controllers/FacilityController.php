@@ -15,16 +15,16 @@ class FacilityController extends BaseController
     public function getAllFacilities()
     {
         try {
-            // Pagination, get data from client
+            // Pagination
             $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 8;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
-            // Validate limit and page
+
             if ($limit < 1 || $limit > 100) {
-                throw new Exceptions\BadRequest('Limit must be between 1 and 100.');
+                throw new Exceptions\BadRequest('Bad Request. Limit must be between 1 and 100.');
             }
             if ($page < 1) {
-                throw new Exceptions\BadRequest('Page number must be positive.');
+                throw new Exceptions\BadRequest('Bad Request. Page number must be positive.');
             }
 
             $offset = ($page - 1) * $limit;
@@ -33,7 +33,7 @@ class FacilityController extends BaseController
             $query = 'SELECT * FROM Facility LIMIT ' . $limit . ' OFFSET ' . $offset;
 
             if (!$this->db->executeQuery($query)) {
-                throw new Exceptions\InternalServerError('Error fetching facilities from the database.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Error fetching facilities from the database.');
             }
 
             $facilities = $this->db->getResults();
@@ -46,7 +46,7 @@ class FacilityController extends BaseController
                 $bind = ['location_id' => $facility['location_id']];
 
                 if (!$this->db->executeQuery($query, $bind)) {
-                    throw new Exceptions\InternalServerError('Error fetching location data for the facility.');
+                    throw new Exceptions\InternalServerError('Internal Server Error. Error fetching location data for the facility.');
                 }
 
                 $location = $this->db->getResults();
@@ -58,7 +58,7 @@ class FacilityController extends BaseController
                 $bind = ['facility_id' => $facilityId];
 
                 if (!$this->db->executeQuery($query, $bind)) {
-                    throw new Exceptions\InternalServerError('Error fetching tag data for the facility.');
+                    throw new Exceptions\InternalServerError('Internal Server Error. Error fetching tag data for the facility.');
                 }
 
                 $tags = $this->db->getResults();
@@ -69,7 +69,7 @@ class FacilityController extends BaseController
                 $bind = ['id' => $facility['id']];
 
                 if (!$this->db->executeQuery($query, $bind)) {
-                    throw new Exceptions\InternalServerError('Error fetching employees for the facility.');
+                    throw new Exceptions\InternalServerError('Internal Server Error. Error fetching employees for the facility.');
                 }
 
                 $employees = $this->db->getResults();
@@ -90,7 +90,7 @@ class FacilityController extends BaseController
     public function getFacilityById($facilityId)
     {
         try {
-            // VALIDATIONS of the id
+
             $this->validateFacilityId($facilityId);
 
             // Get the facility from the database
@@ -98,10 +98,10 @@ class FacilityController extends BaseController
             $bind = ['id' => $facilityId];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError('Failed to retrieve the facility.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Failed to retrieve the facility.');
             }
             if (!$facility = $this->db->getResults()) {
-                throw new Exceptions\NotFound('No facility found with the provided ID.');
+                throw new Exceptions\NotFound('Not Found. No facility found with the provided ID.');
             }
             $facility = $facility[0];
 
@@ -110,24 +110,24 @@ class FacilityController extends BaseController
             $bind = ['location_id' => $facility['location_id']];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError('Failed to retrieve the location for the facility.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Failed to retrieve the location for the facility.');
             }
             if (!$location = $this->db->getResults()) {
-                throw new Exceptions\NotFound('Location associated with the facility not found.');
+                throw new Exceptions\NotFound('Not Found. Location associated with the facility not found.');
             }
             $facility['location'] = $location[0];
 
             // Get the tags associated with the facility
             $query = 'SELECT * FROM Tag
-        JOIN Facility_Tag ON Facility_Tag.tag_id = Tag.id
-        WHERE Facility_Tag.facility_id = :facility_id';
+                    JOIN Facility_Tag ON Facility_Tag.tag_id = Tag.id
+                    WHERE Facility_Tag.facility_id = :facility_id';
             $bind = ['facility_id' => $facilityId];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError('Failed to retrieve tags for the facility.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Failed to retrieve tags for the facility.');
             }
             if (!$tags = $this->db->getResults()) {
-                throw new Exceptions\NotFound('No tags found for the specified facility.');
+                throw new Exceptions\NotFound('Not Found. No tags found for the specified facility.');
             }
             $facility['tags'] = $tags;
 
@@ -138,10 +138,10 @@ class FacilityController extends BaseController
             $bind = ['id' => $facility['id']];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError('Failed to retrieve employees for the facility.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Failed to retrieve employees for the facility.');
             }
             if (!$employees = $this->db->getResults()) {
-                throw new Exceptions\NotFound('No employees found for the specified facility.');
+                throw new Exceptions\NotFound('Not Found. No employees found for the specified facility.');
             }
             $facility['employees'] = $employees;
 
@@ -163,16 +163,13 @@ class FacilityController extends BaseController
     public function createFacility()
     {
         try {
-            // Begin transaction
+
             $this->db->beginTransaction();
 
-            // Get data from the request body and decode
             $data = json_decode(file_get_contents("php://input"), true);
 
-            // VALIDATIONS of the sent data
             $this->validateFacilityData($data);
 
-            // CREATE using model
             $facility = new Facility(
                 $data['name'],
                 $data['creation_date'],
@@ -187,7 +184,7 @@ class FacilityController extends BaseController
             ];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError(['message' => 'Failed to execute query during facility verification.']);
+                throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during facility verification.']);
             }
             if ($existingFacility = $this->db->getResults()) {
                 throw new Exceptions\BadRequest(['message' => 'A facility with this name already exists at the specified location.']);
@@ -202,14 +199,13 @@ class FacilityController extends BaseController
             ];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError(['message' => 'Failed to create new facility.']);
+                throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to create new facility.']);
             }
 
             // Get the ID of the newly created facility
             $facilityId = $this->db->getLastInsertedId();
 
-            // Check and handle tags
-            if (isset($data['tags'])) {
+            // Handle tags
                 foreach ($data['tags'] as $tag) {
 
                     $tagName = $tag;
@@ -219,22 +215,23 @@ class FacilityController extends BaseController
                     $bind = ['name' => $tagName];
 
                     if (!$this->db->executeQuery($query, $bind)) {
-                        throw new Exceptions\InternalServerError(['message' => 'Failed during tag existence check.']);
+                        throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed during tag existence check.']);
                     }
 
                     // If the tag exists, get its ID
                     if ($existingTag = $this->db->getResults()) {
                         $tagId = $existingTag[0]['id'];
                     } else {
+
                         // If the tag doesn't exist, create it
                         $query = 'INSERT INTO Tag (name) VALUES (:name)';
                         $bind = ['name' => $tagName];
 
                         if (!$this->db->executeQuery($query, $bind)) {
-                            throw new Exceptions\InternalServerError(['message' => 'Failed to create new tag.']);
+                            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to create new tag.']);
                         }
                         if (!$tagId = $this->db->getLastInsertedId()) {
-                            throw new Exceptions\InternalServerError(['message' => 'Failed to retrieve new tag ID.']);
+                            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to retrieve new tag ID.']);
                         }
                     }
 
@@ -243,29 +240,23 @@ class FacilityController extends BaseController
                     $bind = ['facility_id' => $facilityId, 'tag_id' => $tagId];
 
                     if (!$this->db->executeQuery($query, $bind)) {
-                        throw new Exceptions\InternalServerError(['message' => 'Failed to associate tag with facility.']);
+                        throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to associate tag with facility.']);
                     }
                 }
-            }
 
             // Create the new employees
-            if (isset($data['employees'])) {
                 foreach ($data['employees'] as $employeeData) {
-
-                    if (!isset($employeeData['email'])) {
-                        throw new Exceptions\BadRequest(['message' => 'Employee data incomplete, email is missing.']);
-                    }
 
                     // Check if the email is already in use
                     $emailQuery = 'SELECT id FROM Employee WHERE email = :email';
                     $emailBind = ['email' => $employeeData['email']];
 
                     if (!$this->db->executeQuery($emailQuery, $emailBind)) {
-                        throw new Exceptions\InternalServerError(['message' => 'Failed to execute query during employee email verification.']);
+                        throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during employee email verification.']);
                     }
 
                     if ($this->db->getResults()) {
-                        throw new Exceptions\BadRequest(['message' => 'An employee with this email already exists.']);
+                        throw new Exceptions\BadRequest(['message' => 'Bad Request. An employee with this email already exists.']);
                     }
 
                     $employee = new Employee(
@@ -287,10 +278,9 @@ class FacilityController extends BaseController
                     ];
 
                     if (!$this->db->executeQuery($query, $bind)) {
-                        throw new Exceptions\InternalServerError(['message' => 'Failed to create new employee.']);
+                        throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to create new employee.']);
                     }
                 }
-            }
 
             // Save transaction
             $this->db->commit();
@@ -311,31 +301,33 @@ class FacilityController extends BaseController
     public function editFacility($facilityId)
     {
         try {
-            // Begin transaction
+
             $this->db->beginTransaction();
 
-            // Get data from the request body and decode it
             $data = json_decode(file_get_contents("php://input"), true);
 
-            // VALIDATE the sent data
             $this->validateFacilityData($data);
             $this->validateFacilityId($facilityId);
 
-            // Create a Facility model instance and set its properties
-            $facility = new Facility($data['name'], $data['creation_date'], $data['location_id'], $data['tags']);
+            $facility = new Facility(
+                $data['name'], 
+                $data['creation_date'], 
+                $data['location_id'], 
+                $data['tags']
+            );
 
             // Check if the facility exists
             $query = 'SELECT id FROM Facility WHERE id = :facility_id';
             $bind = ['facility_id' => $facilityId];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError(['message' => 'Failed to execute query during facility verification.']);
+                throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during facility verification.']);
             }
             if (!$existingFacility = $this->db->getResults()) {
-                throw new Exceptions\BadRequest(['message' => 'Facility does not exist.']);
+                throw new Exceptions\BadRequest(['message' => 'Bad Request. Facility does not exist.']);
             }
 
-            // Update the facility in the database
+            // Update the facility
             $query = 'UPDATE Facility SET name = :name, creation_date = :creation_date, location_id = :location_id WHERE id = :facility_id';
             $bind = [
                 'name' => $facility->getName(),
@@ -345,7 +337,7 @@ class FacilityController extends BaseController
             ];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError(['message' => 'Failed to update facility.']);
+                throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to update facility.']);
             }
 
             // Remove existing tag associations for this facility
@@ -353,10 +345,10 @@ class FacilityController extends BaseController
             $bind = ['facility_id' => $facilityId];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError(['message' => 'Failed to remove existing tag associations.']);
+                throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to remove existing tag associations.']);
             }
 
-            // Handle tags if provided
+            // Handle tags
             if (!empty($facility->getTags())) {
                 foreach ($facility->getTags() as $tagName) {
 
@@ -365,17 +357,17 @@ class FacilityController extends BaseController
                     $bind = ['name' => $tagName];
 
                     if (!$this->db->executeQuery($query, $bind)) {
-                        throw new Exceptions\InternalServerError(['message' => 'Failed during tag existence check.']);
+                        throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed during tag existence check.']);
                     }
-                    if (!$existingTag = $this->db->getResults()) {
-                        // Tag does not exist, create it
+
+                    // Tag does not exist, create it
+                    if (!$existingTag = $this->db->getResults()) {                       
                         $query = 'INSERT INTO Tag (name) VALUES (:name)';
                         $bind = ['name' => $tagName];
                         if (!$this->db->executeQuery($query, $bind)) {
-                            throw new Exceptions\InternalServerError(['message' => 'Failed to create new tag.']);
+                            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to create new tag.']);
                         }
 
-                        // Get the ID of the newly created tag
                         $tagId = $this->db->getLastInsertedId();
                     } else {
                         $tagId = $existingTag[0]['id'];
@@ -386,18 +378,13 @@ class FacilityController extends BaseController
                     $bind = ['facility_id' => $facilityId, 'tag_id' => $tagId];
 
                     if (!$this->db->executeQuery($query, $bind)) {
-                        throw new Exceptions\InternalServerError(['message' => 'Failed to associate tag with facility.']);
+                        throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to associate tag with facility.']);
                     }
                 }
             }
 
-            // Handle employee edits
+            // Handle employee
             foreach ($data['employees'] as $employeeData) {
-
-                // Check if email is set and not empty
-                if (!isset($employeeData['email']) || empty($employeeData['email'])) {
-                    throw new Exceptions\BadRequest(['message' => 'Employee data incomplete, email is missing.']);
-                }
 
                 // Create an Employee model instance
                 $employee = new Employee(
@@ -413,13 +400,13 @@ class FacilityController extends BaseController
                 $bind = ['email' => $employeeData['email']];
 
                 if (!$this->db->executeQuery($query, $bind)) {
-                    throw new Exceptions\InternalServerError(['message' => 'Failed to execute query during employee verification.']);
+                    throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during employee verification.']);
                 }
                 if (!$existingEmployee = $this->db->getResults()) {
-                    throw new Exceptions\NotFound(['message' => 'Employee not found.']);
+                    throw new Exceptions\NotFound(['message' => 'Not Found. Employee not found.']);
                 }
 
-                // Update the existing employee in the database
+                // Update the existing employee
                 $query = 'UPDATE Employee SET first_name = :first_name, last_name = :last_name, role = :role, facility_id = :facility_id WHERE email = :email';
                 $bind = [
                     'first_name' => $employee->getFirstName(),
@@ -430,11 +417,10 @@ class FacilityController extends BaseController
                 ];
 
                 if (!$this->db->executeQuery($query, $bind)) {
-                    throw new Exceptions\InternalServerError(['message' => 'Failed to update employee.']);
+                    throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to update employee.']);
                 }
             }
 
-            // Commit transaction
             $this->db->commit();
 
             (new Status\Ok(['message' => 'Facility updated successfully!']))->send();
@@ -457,10 +443,9 @@ class FacilityController extends BaseController
     public function deleteFacility($facilityId)
     {
         try {
-            // Begin transaction
+
             $this->db->beginTransaction();
 
-            // VALIDATE the sent data
             $this->validateFacilityId($facilityId);
 
             // Check if the facility with the specified ID exists
@@ -468,10 +453,10 @@ class FacilityController extends BaseController
             $bind = ['id' => $facilityId];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError('Error querying the facility.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Error querying the facility.');
             }
             if (!$existingFacility = $this->db->getResults()) {
-                throw new Exceptions\NotFound('The facility with the specified ID does not exist.');
+                throw new Exceptions\NotFound('Not Found. The facility with the specified ID does not exist.');
             }
 
             // Delete the employees associated with the facility
@@ -479,7 +464,7 @@ class FacilityController extends BaseController
             $bind = ['facility_id' => $facilityId];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError('Error deleting associated employees.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Error deleting associated employees.');
             }
 
             // Delete the relationships between the facility and tags
@@ -487,7 +472,7 @@ class FacilityController extends BaseController
             $bind = ['facility_id' => $facilityId];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError('Error deleting tag associations.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Error deleting tag associations.');
             }
 
             // Delete the facility
@@ -495,16 +480,14 @@ class FacilityController extends BaseController
             $bind = ['id' => $facilityId];
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError('Error deleting the facility.');
+                throw new Exceptions\InternalServerError('Internal Server Error. Error deleting the facility.');
             }
 
-            // Commit the transaction
             $this->db->commit();
 
             (new Status\Ok(['message' => 'Facility and its associated tags and employees successfully deleted!']))->send();
         } catch (Exceptions\BadRequest $e) {
 
-            // Rollback
             $this->db->rollBack();
             (new Status\BadRequest(['message' => $e->getMessage()]))->send();
         } catch (Exceptions\InternalServerError $e) {
@@ -526,22 +509,20 @@ class FacilityController extends BaseController
             $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 8;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
-            // Validate limit and page
             if ($limit < 1 || $limit > 100) {
-                throw new Exceptions\BadRequest("Invalid limit value. Limit should be between 1 and 100.");
+                throw new Exceptions\BadRequest("Bad Request. Invalid limit value. Limit should be between 1 and 100.");
             }
             if ($page < 1) {
-                throw new Exceptions\BadRequest("Invalid page number. Page number should be greater than 0.");
+                throw new Exceptions\BadRequest("Bad Request. Invalid page number. Page number should be greater than 0.");
             }
 
             $offset = ($page - 1) * $limit;
 
-            // Get parameters from the request body
             $data = json_decode(file_get_contents("php://input"), true);
+
             $bind = [];
             $conditions = [];
 
-            // VALIDATIONS of the sent data
             $this->validateFacilityDataSearch($data);
 
             // Query to join all tables
@@ -550,19 +531,19 @@ class FacilityController extends BaseController
                 LEFT JOIN Tag ON Facility_Tag.tag_id = Tag.id
                 LEFT JOIN Location ON Facility.location_id = Location.id";
 
-            // If a facility name is provided, add it to the conditions
+            // add facility to the conditions
             if (!empty($data['name'])) {
                 $conditions[] = "Facility.name LIKE :name";
                 $bind['name'] = '%' . $data['name'] . '%';
             }
 
-            // If a tag name is provided, add it to the conditions
+            // add tag to the conditions
             if (!empty($data['tags'])) {
                 $conditions[] = "Tag.name LIKE :tags";
                 $bind['tags'] = '%' . $data['tags'] . '%';
             }
 
-            // If a city is provided, add it to the conditions
+            // add city to the conditions
             if (!empty($data['location'])) {
                 $conditions[] = "Location.city LIKE :location";
                 $bind['location'] = '%' . $data['location'] . '%';
@@ -577,10 +558,10 @@ class FacilityController extends BaseController
             $query .= " LIMIT $limit OFFSET $offset";
 
             if (!$this->db->executeQuery($query, $bind)) {
-                throw new Exceptions\InternalServerError("Failed to execute the search query.");
+                throw new Exceptions\InternalServerError("Internal Server Error. Failed to execute the search query.");
             }
             if (!$results = $this->db->getResults()) {
-                throw new Exceptions\BadRequest("No facilities found with the provided search criteria.");
+                throw new Exceptions\BadRequest("Bad Request. No facilities found with the provided search criteria.");
             }
 
             // Associate the tags to the facility
@@ -595,7 +576,7 @@ class FacilityController extends BaseController
                     $tags = $this->db->getResults();
                     $facility['tags'] = array_column($tags, 'name');
                 } else {
-                    throw new Exceptions\InternalServerError("Failed to retrieve tags for the facility.");
+                    throw new Exceptions\InternalServerError("Internal Server Error. Failed to retrieve tags for the facility.");
                 }
             }
 
@@ -609,76 +590,76 @@ class FacilityController extends BaseController
         }
     }
 
+    
 
     // VALIDATION FUNCTIONS:
 
-    // Validation data from user
+    // Data from client
     private function validateFacilityData($data)
     {
-        // Check the required fields
         if (!isset($data['name']) || !isset($data['creation_date']) || !isset($data['location_id'])) {
-            throw new Exceptions\BadRequest(['message' => 'Name, creation date, and location ID are required.']);
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Name, creation date, and location ID are required.']);
         }
 
-        // Validate the name length and string
+        // facility name
         if (isset($data['name'])) {
             if (!is_string($data['name']) || strlen($data['name']) > 255) {
-                throw new Exceptions\BadRequest(['message' => 'Facility name must be a string and less than 256 characters.']);
+                throw new Exceptions\BadRequest(['message' => 'Bad Request. Facility name must be a string and less than 256 characters.']);
             }
         }
 
-        // Validate the date format
+        // date
         $creationDate = $data['creation_date'];
         $date = \DateTime::createFromFormat('Y-m-d', $creationDate);
 
         if (!$date || $date->format('Y-m-d') !== $creationDate) {
-            throw new Exceptions\BadRequest(['message' => 'Creation date must be in the format YYYY-MM-DD.']);
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Creation date must be in the format YYYY-MM-DD.']);
         }
 
-        // Validate location_id
+        // location_id
         if (!is_numeric($data['location_id']) || $data['location_id'] < 1 || $data['location_id'] > 7) {
-            throw new Exceptions\BadRequest(['message' => 'Location ID must be a number between 1 and 7.']);
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Location ID must be a number between 1 and 7.']);
         }
 
-        // Validate tags
+        // array tags
         if (isset($data['tags'])) {
             if ((!is_array($data['tags']) || count($data['tags']) > 5)) {
-                throw new Exceptions\BadRequest(['message' => 'You can only add up to 5 tags. Tags must to be in an array']);
+                throw new Exceptions\BadRequest(['message' => 'Bad Request. You can only add up to 5 tags. Tags must to be in an array']);
             }
-            // Check each tag is not numeric or empty string
+            // each tag
             foreach ($data['tags'] as $tag) {
                 if (is_numeric($tag) || empty($tag)) {
-                    throw new Exceptions\BadRequest(['message' => 'Tags must be non-numeric strings and cannot be empty.']);
+                    throw new Exceptions\BadRequest(['message' => 'Bad Request. Tags must be non-numeric strings and cannot be empty.']);
                 }
             }
         }
 
-        // Validate employees data
+        // Employees data
         if (isset($data['employees'])) {
             if (!is_array($data['employees'])) {
-                throw new Exceptions\BadRequest(['message' => 'Employees data must be in an array.']);
+                throw new Exceptions\BadRequest(['message' => 'Bad Request. Employees data must be in an array.']);
             }
 
             foreach ($data['employees'] as $employee) {
 
-                // Validate employee's first name
+                // first name
                 if (!isset($employee['first_name']) || !is_string($employee['first_name']) || strlen($employee['first_name']) > 255) {
-                    throw new Exceptions\BadRequest(['message' => "Each employee's first name must be a string and less than 256 characters."]);
+                    throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's first name must be a string and less than 256 characters or mising field."]);
                 }
 
-                // Validate employee's last name
+                // last name
                 if (!isset($employee['last_name']) || !is_string($employee['last_name']) || strlen($employee['last_name']) > 255) {
-                    throw new Exceptions\BadRequest(['message' => "Each employee's last name must be a string and less than 256 characters."]);
+                    throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's last name must be a string and less than 256 characters or mising field."]);
                 }
 
-                // Validate employee's role
+                // role
                 if (!isset($employee['role']) || !is_string($employee['role']) || strlen($employee['role']) > 255) {
-                    throw new Exceptions\BadRequest(['message' => "Each employee's role must be a string and less than 256 characters."]);
+                    throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's role must be a string and less than 256 characters or mising field."]);
                 }
 
-                // Validate email
+                // email
                 if (!isset($employee['email']) || !filter_var($employee['email'], FILTER_VALIDATE_EMAIL) || strlen($employee['email']) > 255) {
-                    throw new Exceptions\BadRequest(['message' => "Each employee's email must be a valid format and less than 256 characters."]);
+                    throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's email must be a valid format and less than 256 characters or mising field."]);
                 }
             }
         }
@@ -689,18 +670,18 @@ class FacilityController extends BaseController
     {
         if (isset($facilityId)) {
             if (!filter_var($facilityId, FILTER_VALIDATE_INT, array("options" => array("min_range" => 1, "max_range" => 2147483647)))) {
-                throw new Exceptions\BadRequest(['message' => 'Facility ID must be an integer between 1 and 2147483647.']);
+                throw new Exceptions\BadRequest(['message' => 'Bad Request. Facility ID must be an integer between 1 and 2147483647.']);
             }
         }
     }
 
-    // Validation Facility Search
+    // Validation Search data
     private function validateFacilityDataSearch($data)
     {
         foreach ($data as $dataInput) {
 
             if (!is_string($dataInput) || strlen($dataInput) > 255) {
-                throw new Exceptions\BadRequest(['message' => 'Search data must be a string and less than 256 characters.']);
+                throw new Exceptions\BadRequest(['message' => 'Bad Request. Search data must be a string and less than 256 characters.']);
             }
         }
     }

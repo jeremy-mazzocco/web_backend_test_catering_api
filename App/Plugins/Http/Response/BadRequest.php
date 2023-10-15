@@ -17,7 +17,7 @@ class BadRequest extends JsonStatus
      */
     public function __construct($body = '')
     {
-        if (is_array($body) && isset($body['message'])) {
+        if (isset($body['message'])) {
             $customMessage = $body['message'];
         } else {
             $customMessage = self::STATUS_MESSAGE; 

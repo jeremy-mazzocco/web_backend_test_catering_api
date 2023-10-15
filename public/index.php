@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
 // Autoloader
 require_once '../vendor/autoload.php';
 
@@ -15,6 +16,10 @@ require_once '../config/services.php';
 
 // Router
 $router = require_once '../routes/router.php';
+
+
+
+
 
 // Run application through router:
 try {

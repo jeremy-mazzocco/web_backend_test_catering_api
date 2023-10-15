@@ -30,11 +30,11 @@ class Facility extends Injectable
     public function setName($name)
     {
         if (!is_string($name) || strlen($name) > 255) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Facility name must be a string and less than 256 characters.']);
         }
 
         if (empty($name)) {
-            throw new Exceptions\NotFound;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert name']);
         }
 
         $this->name = $name;
@@ -51,11 +51,11 @@ class Facility extends Injectable
         $date = \DateTime::createFromFormat('Y-m-d', $creation_date);
 
         if (!$date || $date->format('Y-m-d') !== $creation_date) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Creation date must be in the format YYYY-MM-DD.']);
         }
 
         if (empty($creation_date)) {
-            throw new Exceptions\NotFound;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert creation_date']);
         }
 
         $this->creation_date = $creation_date;
@@ -70,11 +70,11 @@ class Facility extends Injectable
     public function setLocationId($location_id)
     {
         if (!is_numeric($location_id) || ($location_id < 1 || $location_id > 7)) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Location ID must be a number between 1 and 7.']);
         }
 
         if (empty($location_id)) {
-            throw new Exceptions\NotFound;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert lcation_id']);
         }
 
         $this->location_id = $location_id;
@@ -88,11 +88,18 @@ class Facility extends Injectable
 
     public function setTags($tags)
     {
-        // validation let user to create/edit a facility with maximum 5 tags
+        // array tags
         if (!is_array($tags) || count($tags) > 5) {
-            throw new Exceptions\BadRequest;
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. You can only add up to 5 tags. Tags must to be in an array']);
         }
 
+        // each tag
+         foreach ($tags as $tag) {
+            if (is_numeric($tag) || empty($tag)) {
+                throw new Exceptions\BadRequest(['message' => 'Bad Request. Tags must be non-numeric strings and cannot be empty.']);
+            }
+        }
+        
         $this->tags = $tags;
     }
 }
