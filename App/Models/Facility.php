@@ -34,7 +34,7 @@ class Facility extends Injectable
         }
 
         if (empty($name)) {
-            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert name']);
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Couldn't insert name"]);
         }
 
         $this->name = $name;

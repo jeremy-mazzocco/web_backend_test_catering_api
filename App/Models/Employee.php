@@ -26,6 +26,7 @@ class Employee extends Injectable
     public function getFirstName()
     {
         return $this->first_name;
+       
     }
 
     public function setFirstName($first_name)
@@ -35,7 +36,7 @@ class Employee extends Injectable
         }
 
         if (empty($first_name)) {
-            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert name']);
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Couldn't insert first name"]);
         }
 
         $this->first_name = $first_name;
@@ -54,7 +55,7 @@ class Employee extends Injectable
         }
 
         if (empty($last_name)) {
-            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert last name']);
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Couldn't insert last name"]);
         }
 
         $this->last_name = $last_name;
@@ -73,7 +74,7 @@ class Employee extends Injectable
         }
 
         if (empty($role)) {
-            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert role']);
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Couldn't insert role"]);
         }
 
         $this->role = $role;
@@ -92,7 +93,7 @@ class Employee extends Injectable
         }
 
         if (empty($facility_id)) {
-            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert facility id']);
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Couldn't insert facility id"]);
         }
 
         $this->facility_id = $facility_id;
@@ -111,7 +112,7 @@ class Employee extends Injectable
         }
 
         if (empty($email)) {
-            throw new Exceptions\BadRequest(['message' => 'Bad Request. Couldn/t insert email']);
+            throw new Exceptions\BadRequest(['message' => "Bad Request. Couldn't insert email"]);
         }
 
         $this->email = $email;
