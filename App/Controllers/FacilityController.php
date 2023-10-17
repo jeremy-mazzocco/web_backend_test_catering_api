@@ -89,7 +89,6 @@ class FacilityController extends BaseController
         }
     }
 
-
     // EDIT A FACILITY
     public function editFacility($facilityId)
     {
