@@ -24,7 +24,6 @@ class FacilityService extends Injectable
             throw new Exceptions\BadRequest(['message' => 'Bad Request. Error fetching facilities from the database.']);
         }
 
-
         // For each facility, attach associated location, tags and employee
         foreach ($facilities as &$facility) {
 
@@ -150,9 +149,7 @@ class FacilityService extends Injectable
             $data['tags']
         );
 
-
         $this->selectFacilityById($facilityId);
-
 
         // Update the facility into the database
         $query = 'UPDATE Facility SET name = :name, creation_date = :creation_date, location_id = :location_id WHERE id = :facility_id';
@@ -234,27 +231,6 @@ class FacilityService extends Injectable
         }
     }
 
-    // public function createEmpl($data)
-    // {
-    //        // Check if the email is already in use
-    //        $emailQuery = 'SELECT id FROM Employee WHERE email = :email';
-    //        $emailBind = ['email' => $data['email']];
-   
-    //        if (!$this->db->executeQuery($emailQuery, $emailBind)) {
-    //            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during employee email verification.']);
-    //        }
-   
-    //        if ($this->db->getResults()) {
-    //            throw new Exceptions\BadRequest(['message' => 'Employee email already in database.']);
-    //        } else {
-
-    //         // Crate a new employee asociate with facilty_id
-
-    //        }
-
-
-    // }
-
     public function deleteEmpl($employeeId)
     {
 
@@ -327,7 +303,7 @@ class FacilityService extends Injectable
             }
         }
 
-        return $facility;
+        return $results;
     }
 
 
@@ -424,8 +400,8 @@ class FacilityService extends Injectable
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during employee email verification.']);
         }
 
-        if (!$this->db->getResults()) {
-            throw new Exceptions\BadRequest(['message' => 'Employee email not in database.']);
+        if ($this->db->getResults()) {
+            throw new Exceptions\BadRequest(['message' => 'Employee email in database.']);
         }
     }
 

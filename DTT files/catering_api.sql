@@ -207,6 +207,19 @@ INSERT INTO `tag` (`id`, `name`) VALUES
 (3, 'Private Parties'),
 (1, 'Weddings');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 --
 -- Indexes for dumped tables
 --

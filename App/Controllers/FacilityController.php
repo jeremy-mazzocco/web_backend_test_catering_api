@@ -6,6 +6,10 @@ use App\Plugins\Http\Response as Status;
 use App\Plugins\Http\Exceptions;
 use App\Services\FacilityService;
 
+
+// try {
+
+// if (isset($_SESSION['authenticated']) && $_SESSION['authenticated']) {
 class FacilityController extends BaseController
 {
 
@@ -85,35 +89,6 @@ class FacilityController extends BaseController
         }
     }
 
-    // CREATE A EMPLOYEE
-    // public function createEmployee()
-    // {
-    //     try {
-
-    //         $this->db->beginTransaction();
-
-    //         $data = json_decode(file_get_contents("php://input"), true);
-
-    //         $this->validateFacilityData($data);
-
-    //         $facilityService  = new FacilityService();
-
-    //         $facilityService->createEmpl($data);
-
-    //         $this->db->commit();
-
-
-    //         (new Status\Created(['message' => 'Facility created successfully!']))->send();
-    //     } catch (Exceptions\BadRequest $e) {
-
-    //         $this->db->rollBack();
-    //         (new Status\BadRequest(['message' => $e->getMessage()]))->send();
-    //     } catch (Exceptions\InternalServerError $e) {
-
-    //         $this->db->rollBack();
-    //         (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
-    //     }
-    // }
 
     // EDIT A FACILITY
     public function editFacility($facilityId)
@@ -346,3 +321,4 @@ class FacilityController extends BaseController
         }
     }
 }
+

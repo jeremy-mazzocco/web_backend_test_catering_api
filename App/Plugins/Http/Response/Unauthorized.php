@@ -14,6 +14,7 @@ class Unauthorized extends JsonStatus {
      * Constructor of this class
      * @param mixed $body
      */
+    
     public function __construct($body = '') {
         parent::__construct(self::STATUS_CODE, self::STATUS_MESSAGE, $body);
     }

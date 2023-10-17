@@ -17,8 +17,7 @@ require_once '../config/services.php';
 // Router
 $router = require_once '../routes/router.php';
 
-
-
+session_start();
 
 
 // Run application through router:
