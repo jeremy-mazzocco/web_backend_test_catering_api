@@ -9,7 +9,7 @@ use App\Plugins\Http\Exceptions;
 
 
 class FacilityService extends Injectable
-{
+{    
 
     public function AllFacilities($pagination)
     {
@@ -109,34 +109,6 @@ class FacilityService extends Injectable
         }
 
 
-        // Insert new employees
-        if (isset($data['employees'])) {
-            foreach ($data['employees'] as $employee) {
-
-                $this->selectEmployeeByEmail($employee);
-
-                $employee = new Employee(
-                    $employee['first_name'],
-                    $employee['last_name'],
-                    $employee['role'],
-                    $facilityId,
-                    $employee['email']
-                );
-
-                $query = 'INSERT INTO Employee (first_name, last_name, role, facility_id, email) VALUES (:first_name, :last_name, :role, :facility_id, :email)';
-                $bind = [
-                    'first_name' => $employee->getFirstName(),
-                    'last_name' => $employee->getLastName(),
-                    'role' => $employee->getRole(),
-                    'facility_id' => $employee->getFacilityId(),
-                    'email' => $employee->getEmail()
-                ];
-
-                if (!$this->db->executeQuery($query, $bind)) {
-                    throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to create new employee.']);
-                }
-            }
-        }
     }
 
     public function edit($facilityId, $data)
@@ -172,38 +144,6 @@ class FacilityService extends Injectable
         foreach ($data['tags'] as $tag) {
 
             $this->createTag($tag, $facilityId);
-        }
-
-
-        // Update employee
-        if (isset($data['employees'])) {
-
-            foreach ($data['employees'] as $employeeData) {
-
-                $this->selectEmployeeByEmail($employeeData);
-
-                $employee = new Employee(
-                    $employeeData['first_name'],
-                    $employeeData['last_name'],
-                    $employeeData['role'],
-                    $facilityId,
-                    $employeeData['email']
-                );
-
-                // Update the existing employee
-                $query = 'UPDATE Employee SET first_name = :first_name, last_name = :last_name, role = :role, facility_id = :facility_id WHERE email = :email';
-                $bind = [
-                    'first_name' => $employee->getFirstName(),
-                    'last_name' => $employee->getLastName(),
-                    'role' => $employee->getRole(),
-                    'facility_id' => $employee->getFacilityId(),
-                    'email' => $employee->getEmail()
-                ];
-
-                if (!$this->db->executeQuery($query, $bind)) {
-                    throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to update employee.']);
-                }
-            }
         }
     }
 
@@ -388,20 +328,6 @@ class FacilityService extends Injectable
 
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to associate tag with facility.']);
-        }
-    }
-
-    private function selectEmployeeByEmail(&$employee)
-    {
-        $emailQuery = 'SELECT id FROM Employee WHERE email = :email';
-        $emailBind = ['email' => $employee['email']];
-
-        if (!$this->db->executeQuery($emailQuery, $emailBind)) {
-            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during employee email verification.']);
-        }
-
-        if ($this->db->getResults()) {
-            throw new Exceptions\BadRequest(['message' => 'Employee email in database.']);
         }
     }
 

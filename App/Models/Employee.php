@@ -88,8 +88,8 @@ class Employee extends Injectable
 
     public function setFacilityId($facility_id)
     {
-        if (!is_numeric($facility_id) || $facility_id <= 0) {
-            throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's facility id must be a string and less than 256 characters."]);
+        if (!filter_var($facility_id, FILTER_VALIDATE_INT, array("options" => array("min_range" => 1, "max_range" => 2147483647)))) {
+                throw new Exceptions\BadRequest(['message' => 'Bad Request. employee ID must be an integer between 1 and 2147483647.']);
         }
 
         if (empty($facility_id)) {
