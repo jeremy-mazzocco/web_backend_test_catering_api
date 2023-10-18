@@ -8,7 +8,6 @@ use App\Plugins\Http\Exceptions;
 
 class AuthService extends Injectable
 {
-
     public function isUsernameTaken($data)
     {
         $username = $data['username'];
@@ -17,13 +16,11 @@ class AuthService extends Injectable
         $query = "SELECT * FROM users WHERE username = '$username'";
         if (!$this->db->executeQuery($query)) {
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Error fetching facilities from the database.']);
-        }
-       
+        } 
     }
 
     public function hashPassword($data)
     {
-
         // Hash password
         $password = $data['password'];
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);

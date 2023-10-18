@@ -50,8 +50,6 @@ class AuthController extends BaseController
         }
     }
 
-
-
     public function loginUser()
     {
         try {
@@ -116,16 +114,20 @@ class AuthController extends BaseController
     private function validateUserData($data)
     {
 
-        if (!isset($data['username']) || !isset($data['password'])) {
+        if (empty($data['username']) || empty($data['password'])) {
             throw new Exceptions\BadRequest(['message' => 'Bad Request. Password or Username are required.']);
         }
 
-        if (strlen($data['username'] < 1  || $data['password'] < 4 || strlen($data['username'] > 255 || $data['password'])) > 255) {
-            throw new Exceptions\BadRequest(['message' => 'Bad Request. Password or Username minimun 4 character and maximun 255.']);
+        if (strlen($data['username']) < 4 || strlen($data['password']) < 4) {
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Password or Username must be al least 4 characters.']);
         }
 
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $data['username'] || $data['password'])) {
-            throw new Exceptions\BadRequest(['message' => 'Password or Username can only contain letters, numbers, and underscores.']);
+        if (strlen($data['username']) > 255 || strlen($data['password']) > 255) {
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Password or Username must be minimun 255 characters.']);
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $data['username'])) {
+            throw new Exceptions\BadRequest(['message' => 'Bad Request. Username can only contain letters, numbers, and underscores.']);
         }
     }
 }
