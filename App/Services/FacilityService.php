@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\Employee;
 use App\Models\Facility;
 use App\Plugins\Di\Injectable;
 use App\Plugins\Http\Exceptions;
 
 
 class FacilityService extends Injectable
-{    
+{
+
 
     public function AllFacilities($pagination)
     {
@@ -47,13 +47,14 @@ class FacilityService extends Injectable
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['Message' => 'Internal Server Error. Failed to retrieve the facility.']);
         }
+
         if (!$facility = $this->db->getResults()) {
             throw new Exceptions\NotFound(['Message' => 'Not Found. No facility found with the provided ID.']);
         }
         $facility = $facility[0];
+        $locationId = $facility['location_id'];
 
-
-        $this->fetchDataLocationById($facility);
+        $this->fetchDataLocationById($locationId);
 
         $this->fetchDataTagsById($facility);
 
@@ -107,8 +108,6 @@ class FacilityService extends Injectable
 
             $this->createTag($tag, $facilityId);
         }
-
-
     }
 
     public function edit($facilityId, $data)
@@ -250,10 +249,11 @@ class FacilityService extends Injectable
 
     // OTHER FUNCTIONS:
 
-    private function fetchDataLocationById($facility)
+    public function fetchDataLocationById($locationId)
     {
+
         $query = 'SELECT * FROM Location WHERE id = :location_id';
-        $bind = ['location_id' => $facility['location_id']];
+        $bind = ['location_id' => $locationId];
 
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['Message' => 'Internal Server Error. Failed to retrieve the location for the facility.']);
@@ -261,10 +261,11 @@ class FacilityService extends Injectable
         if (!$location = $this->db->getResults()) {
             throw new Exceptions\NotFound(['Message' => 'Not Found. Location associated with the facility not found.']);
         }
-        $facility['location'] = $location[0];
+
+        return $facility['location'] = $location[0];
     }
 
-    private function fetchDataTagsById(&$facility)
+    public function fetchDataTagsById(&$facility)
     {
         $facilityId = $facility['id'];
 
@@ -281,9 +282,11 @@ class FacilityService extends Injectable
         foreach ($tags as $tag) {
             $facility['tags'][] = $tag['name'];
         };
+
+        return;
     }
 
-    private function fetchDataEmployee(&$facility)
+    public function fetchDataEmployee(&$facility)
     {
         $query = 'SELECT * FROM Employee WHERE facility_id = :id';
         $bind = ['id' => $facility['id']];
@@ -294,9 +297,11 @@ class FacilityService extends Injectable
         $employees = $this->db->getResults();
 
         $facility['employees'] = $employees;
+
+        return;
     }
 
-    private function createTag(&$tag, $facilityId)
+    public function createTag(&$tag, $facilityId)
     {
         // select tag by name
         $query = 'SELECT id FROM Tag WHERE name = :name';
@@ -331,7 +336,7 @@ class FacilityService extends Injectable
         }
     }
 
-    private function selectFacilityById(&$facilityId)
+    public function selectFacilityById(&$facilityId)
     {
         // Check if the facility exists
         $query = 'SELECT id FROM Facility WHERE id = :facility_id';
@@ -345,7 +350,7 @@ class FacilityService extends Injectable
         }
     }
 
-    private function deleteFacilityTags(&$facilityId)
+    public function deleteFacilityTags(&$facilityId)
     {
         $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
         $bind = ['facility_id' => $facilityId];

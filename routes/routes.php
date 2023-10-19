@@ -3,6 +3,7 @@
 /** @var Bramus\Router\Router $router */
 
 // Test routes
+$router->get('/', App\controllers\IndexController::class . '@test');
 $router->get('/test', App\controllers\IndexController::class . '@test');
 
 // Auth
