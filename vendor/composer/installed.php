@@ -3,7 +3,7 @@
         'name' => 'dttmultimedia/web_backend_test_catering_api',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '661cb589a232b9e6d7bca76d18ceb5b793e50b10',
+        'reference' => '8b05a07e93af415375dfac483f473aeab267ddf4',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'dttmultimedia/web_backend_test_catering_api' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '661cb589a232b9e6d7bca76d18ceb5b793e50b10',
+            'reference' => '8b05a07e93af415375dfac483f473aeab267ddf4',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

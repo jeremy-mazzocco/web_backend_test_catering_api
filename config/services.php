@@ -23,4 +23,6 @@ $di->setShared('db', function () use ($config) {
     $dbAdapter = new Plugins\Db\Adapters\MySql();
     $dbAdapter->setDb($db);
     return $db;
+
+
 });

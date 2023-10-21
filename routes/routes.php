@@ -12,7 +12,7 @@ $router->post('/login', App\Controllers\AuthController::class . '@loginUser');
 $router->post('/logout', App\Controllers\AuthController::class . '@logoutUser');
 
 
-// show all data
+// read all facility's data
 $router->get('/facilities', App\Controllers\FacilityController::class . '@getAllFacilities');
 
 // search
@@ -22,7 +22,7 @@ $router->post('/search/facilities', App\Controllers\FacilityController::class . 
 $router->post('/facility', App\Controllers\FacilityController::class . '@createFacility');
 $router->post('/employee', App\Controllers\EmployeeController::class . '@createEmployee');
 
-// show by ID
+// read by ID
 $router->get('/facility/{id}', App\Controllers\FacilityController::class . '@getFacilityById');
 $router->get('/employee/{id}', App\Controllers\EmployeeController::class . '@getEmployeeById');
 

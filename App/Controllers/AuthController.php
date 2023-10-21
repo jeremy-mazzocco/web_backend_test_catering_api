@@ -35,7 +35,6 @@ class AuthController extends BaseController
 
             $authService->hashPassword($data);
 
-
             $this->db->commit();
 
             (new Status\Created(['message' => 'User successfully registered!']))->send();
@@ -67,11 +66,13 @@ class AuthController extends BaseController
             }
             $user = $user[0];
 
-            // Verify la password
+            // Verify password
             $password = $data['password'];
+            
             if (!password_verify($password, $user['password_hash'])) {
                 throw new Exceptions\Unauthorized(['message' => 'Bad Request. User or password not correct']);
             }
+
 
             $_SESSION['authenticated'] = true;
 

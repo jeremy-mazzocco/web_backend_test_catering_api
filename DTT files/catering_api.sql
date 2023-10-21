@@ -118,7 +118,10 @@ INSERT INTO `facility` (`id`, `name`, `creation_date`, `location_id`) VALUES
 (12, 'The Hague Beach Parties', '2019-11-11', 5),
 (13, 'Groningen Rooftop Lounge', '2021-07-17', 6),
 (14, 'Maastricht Underground Venue', '2018-08-18', 7),
-(15, 'Amsterdam Museum Venue', '2017-05-05', 1);
+(15, 'Amsterdam Museum Venue', '2017-05-05', 1),
+(16, 'Amsterdam Light Venue', '2017-05-05', 1),
+(17, 'Amsterdam Alley Venue', '2017-05-05', 1),
+(18, 'Amsterdam Toni Venue', '2017-05-05', 1);
 
 -- --------------------------------------------------------
 
@@ -155,7 +158,12 @@ INSERT INTO `facility_tag` (`facility_id`, `tag_id`) VALUES
 (10, 4),
 (8, 5),
 (11, 5),
-(12, 5);
+(12, 5),
+(15, 5),
+(16, 5),
+(17, 5),
+(18, 5);
+
 
 -- --------------------------------------------------------
 
@@ -272,7 +280,7 @@ ALTER TABLE `employee`
 -- AUTO_INCREMENT for table `facility`
 --
 ALTER TABLE `facility`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `location`

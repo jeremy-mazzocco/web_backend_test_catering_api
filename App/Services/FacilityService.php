@@ -10,10 +10,8 @@ use App\Plugins\Http\Exceptions;
 class FacilityService extends Injectable
 {
 
-
     public function AllFacilities($pagination)
     {
-
         // Fetch all facility
         $query = 'SELECT * FROM Facility LIMIT ' . $pagination['limit'] . ' OFFSET ' . $pagination['offset'];
 
@@ -39,10 +37,9 @@ class FacilityService extends Injectable
 
     public function getByID($facilityId)
     {
-
-        // Get the facility from the database by ID
         $query = 'SELECT * FROM Facility WHERE id = :id';
         $bind = ['id' => $facilityId];
+
 
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['Message' => 'Internal Server Error. Failed to retrieve the facility.']);
@@ -51,10 +48,13 @@ class FacilityService extends Injectable
         if (!$facility = $this->db->getResults()) {
             throw new Exceptions\NotFound(['Message' => 'Not Found. No facility found with the provided ID.']);
         }
-        $facility = $facility[0];
-        $locationId = $facility['location_id'];
 
-        $this->fetchDataLocationById($locationId);
+
+        $facility = $facility[0];
+
+        // Attach associated location, tags and employee
+
+        $this->fetchDataLocationById($facility);
 
         $this->fetchDataTagsById($facility);
 
@@ -72,7 +72,6 @@ class FacilityService extends Injectable
             $data['location_id']
         );
 
-
         // Check if a facility with the same name and location already exists
         $query = 'SELECT id FROM Facility WHERE name = :name AND location_id = :location_id';
         $bind = [
@@ -83,10 +82,9 @@ class FacilityService extends Injectable
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during facility verification.']);
         }
-        if ($existingFacility = $this->db->getResults()) {
+        if ($this->db->getResults()) {
             throw new Exceptions\BadRequest(['message' => 'Bad Request. A facility with this name already exists at the specified location.']);
         }
-
 
         // Insert the facility
         $query = 'INSERT INTO Facility (name, creation_date, location_id) VALUES (:name, :creation_date, :location_id)';
@@ -102,12 +100,14 @@ class FacilityService extends Injectable
 
         $facilityId = $this->db->getLastInsertedId();
 
-
+        $data['tags'] = [];
         // Insert tags
         foreach ($data['tags'] as $tag) {
 
             $this->createTag($tag, $facilityId);
         }
+
+        return $facility;
     }
 
     public function edit($facilityId, $data)
@@ -120,7 +120,7 @@ class FacilityService extends Injectable
             $data['tags']
         );
 
-        $this->selectFacilityById($facilityId);
+        $this->isFacilityExist($facilityId);
 
         // Update the facility into the database
         $query = 'UPDATE Facility SET name = :name, creation_date = :creation_date, location_id = :location_id WHERE id = :facility_id';
@@ -135,21 +135,21 @@ class FacilityService extends Injectable
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to update facility.']);
         }
 
-
         $this->deleteFacilityTags($facilityId);
-
 
         // Insert new tags
         foreach ($data['tags'] as $tag) {
 
             $this->createTag($tag, $facilityId);
         }
+
+        return $facility;
     }
 
     public function delete($facilityId)
     {
 
-        $this->selectFacilityById($facilityId);
+        $this->isFacilityExist($facilityId);
 
         // Delete the employees associated with the facility
         $query = 'DELETE FROM Employee WHERE facility_id = :facility_id';
@@ -167,18 +167,6 @@ class FacilityService extends Injectable
 
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['Message' => 'Internal Server Error. Error deleting the facility.']);
-        }
-    }
-
-    public function deleteEmpl($employeeId)
-    {
-
-        // Delete the employee
-        $query = 'DELETE FROM Employee WHERE id = :employee_id';
-        $bind = ['employee_id' => $employeeId];
-
-        if (!$this->db->executeQuery($query, $bind)) {
-            throw new Exceptions\InternalServerError(['Message' => 'Internal Server Error. Error deleting associated employees.']);
         }
     }
 
@@ -249,8 +237,9 @@ class FacilityService extends Injectable
 
     // OTHER FUNCTIONS:
 
-    public function fetchDataLocationById($locationId)
+    public function fetchDataLocationById(&$facility)
     {
+        $locationId = $facility['location_id'];
 
         $query = 'SELECT * FROM Location WHERE id = :location_id';
         $bind = ['location_id' => $locationId];
@@ -262,7 +251,10 @@ class FacilityService extends Injectable
             throw new Exceptions\NotFound(['Message' => 'Not Found. Location associated with the facility not found.']);
         }
 
-        return $facility['location'] = $location[0];
+        $location = $location[0];
+        $facility['location'] = $location;
+
+        return $location;
     }
 
     public function fetchDataTagsById(&$facility)
@@ -288,8 +280,10 @@ class FacilityService extends Injectable
 
     public function fetchDataEmployee(&$facility)
     {
+        $facilityId = $facility['id'];
+
         $query = 'SELECT * FROM Employee WHERE facility_id = :id';
-        $bind = ['id' => $facility['id']];
+        $bind = ['id' => $facilityId];
 
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Error fetching employees from the database.']);
@@ -336,9 +330,8 @@ class FacilityService extends Injectable
         }
     }
 
-    public function selectFacilityById(&$facilityId)
+    public function isFacilityExist($facilityId)
     {
-        // Check if the facility exists
         $query = 'SELECT id FROM Facility WHERE id = :facility_id';
         $bind = ['facility_id' => $facilityId];
 
@@ -350,7 +343,7 @@ class FacilityService extends Injectable
         }
     }
 
-    public function deleteFacilityTags(&$facilityId)
+    public function deleteFacilityTags($facilityId)
     {
         $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
         $bind = ['facility_id' => $facilityId];

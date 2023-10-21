@@ -18,20 +18,18 @@ class EmployeeService extends Injectable
 
     public function create($data)
     {
-        foreach ($data['employees'] as $employee) {
+            // check if email is already in database
+            $this->isEmailRegistered($data);
 
-            // check if employee is already in database
-            $this->selectEmployeeByEmail($employee);
-
-            // check if facility exsist in database
-            $this->selectFacilityById($employee['facility_id']);
+            // check if facility is already in database
+            $this->isFacilityExist($data['facility_id']);
 
             $employee = new Employee(
-                $employee['first_name'],
-                $employee['last_name'],
-                $employee['role'],
-                $employee['facility_id'],
-                $employee['email']
+                $data['first_name'],
+                $data['last_name'],
+                $data['role'],
+                $data['facility_id'],
+                $data['email']
             );
 
             $query = 'INSERT INTO Employee (first_name, last_name, role, facility_id, email) VALUES (:first_name, :last_name, :role, :facility_id, :email)';
@@ -46,16 +44,15 @@ class EmployeeService extends Injectable
             if (!$this->db->executeQuery($query, $bind)) {
                 throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to create new employee.']);
             }
-        }
     }
 
-    public function edit($data)
+    public function edit($data, $employeeId)
     {
-        // check if employee is already in database
-        $this->selectEmployeeByEmail($data);
+        // check if facility is already in database
+        $this->isEmployeeExist($employeeId);
 
-        // check if facility exsist in database
-        $this->selectFacilityById($data['facility_id']);
+        // check if email is already in database
+        $this->isEmailRegistered($data);
 
         $employee = new Employee(
             $data['first_name'],
@@ -66,13 +63,14 @@ class EmployeeService extends Injectable
         );
 
         // Update the existing employee
-        $query = 'UPDATE Employee SET first_name = :first_name, last_name = :last_name, role = :role, facility_id = :facility_id WHERE email = :email';
+        $query = 'UPDATE Employee SET first_name = :first_name, last_name = :last_name, role = :role, facility_id = :facility_id, email = :email WHERE id = :id';
         $bind = [
             'first_name' => $employee->getFirstName(),
             'last_name' => $employee->getLastName(),
             'role' => $employee->getRole(),
             'facility_id' => $employee->getFacilityId(),
-            'email' => $employee->getEmail()
+            'email' => $employee->getEmail(),
+            'id' => $employeeId
         ];
 
         if (!$this->db->executeQuery($query, $bind)) {
@@ -83,6 +81,9 @@ class EmployeeService extends Injectable
     public function delete($employeeId)
     {
 
+        // check if employee is already in database
+        $this->isEmployeeExist($employeeId);
+
         $query = 'DELETE FROM Employee WHERE id = :employee_id';
         $bind = ['employee_id' => $employeeId];
 
@@ -91,73 +92,10 @@ class EmployeeService extends Injectable
         }
     }
 
-    public function search($pagination, $data)
-    {
-        // Query to join all tables
-        $query = "SELECT DISTINCT Facility.* FROM Facility 
-                    LEFT JOIN Facility_Tag ON Facility.id = Facility_Tag.facility_id
-                    LEFT JOIN Tag ON Facility_Tag.tag_id = Tag.id
-                    LEFT JOIN Location ON Facility.location_id = Location.id";
-
-        $bind = [];
-        $conditions = [];
-
-        // add facility to the conditions
-        if (!empty($data['name'])) {
-            $conditions[] = "Facility.name LIKE :name";
-            $bind['name'] = '%' . $data['name'] . '%';
-        }
-
-        // add tag to the conditions
-        if (!empty($data['tags'])) {
-            $conditions[] = "Tag.name LIKE :tags";
-            $bind['tags'] = '%' . $data['tags'] . '%';
-        }
-
-        // add location to the conditions
-        if (!empty($data['location'])) {
-            $conditions[] = "Location.city LIKE :location";
-            $bind['location'] = '%' . $data['location'] . '%';
-        }
-
-
-        // Add pagination to the query
-        if ($conditions) {
-            $query .= ' WHERE ' . implode(' AND ', $conditions);
-        }
-        $query .= ' LIMIT ' . $pagination['limit'] . ' OFFSET ' . $pagination['offset'];
-
-        if (!$this->db->executeQuery($query, $bind)) {
-            throw new Exceptions\InternalServerError(['Message' => "Internal Server Error. Failed to execute the search query."]);
-        }
-        if (!$results = $this->db->getResults()) {
-            throw new Exceptions\BadRequest(['Message' => "Bad Request. No facilities found with the provided search criteria."]);
-        }
-
-
-        // Associate the tags to the facility
-        foreach ($results as &$facility) {
-            $facilityId = $facility['id'];
-            $tagQuery = 'SELECT Tag.name FROM Tag
-                             INNER JOIN Facility_Tag ON Tag.id = Facility_Tag.tag_id
-                             WHERE Facility_Tag.facility_id = :facility_id';
-            $tagBind = ['facility_id' => $facilityId];
-
-            if ($this->db->executeQuery($tagQuery, $tagBind)) {
-                $tags = $this->db->getResults();
-                $facility['tags'] = array_column($tags, 'name');
-            } else {
-                throw new Exceptions\InternalServerError(['Message' => "Internal Server Error. Failed to retrieve tags for the facility."]);
-            }
-        }
-
-        return $results;
-    }
-
 
 
     // OTHER FUNCTIONS:
-    private function selectEmployeeByEmail(&$employee)
+    public function isEmailRegistered($employee)
     {
         $emailQuery = 'SELECT id FROM Employee WHERE email = :email';
         $emailBind = ['email' => $employee['email']];
@@ -171,7 +109,7 @@ class EmployeeService extends Injectable
         }
     }
 
-    private function selectFacilityById(&$facilityId)
+    public function isFacilityExist($facilityId)
     {
         // Check if the facility exists
         $query = 'SELECT id FROM Facility WHERE id = :facility_id';
@@ -180,12 +118,26 @@ class EmployeeService extends Injectable
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during facility verification.']);
         }
-        if (!$existingFacility = $this->db->getResults()) {
+        if (!$this->db->getResults()) {
             throw new Exceptions\NotFound(['message' => 'Not Found. Facility does not exist.']);
         }
     }
 
-    private function fetchDataEmployee($employeeId)
+    public function isEmployeeExist($employeeId)
+    {
+        // Check if the facility exists
+        $query = 'SELECT id FROM Employee WHERE id = :employee_id';
+        $bind = ['employee_id' => $employeeId];
+
+        if (!$this->db->executeQuery($query, $bind)) {
+            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during facility verification.']);
+        }
+        if (!$this->db->getResults()) {
+            throw new Exceptions\NotFound(['message' => 'Not Found. Employee does not exist.']);
+        }
+    }
+
+    public function fetchDataEmployee($employeeId)
 
     {
         $query = 'SELECT * FROM Employee WHERE id = :id';
