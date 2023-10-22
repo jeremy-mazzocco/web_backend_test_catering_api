@@ -2,11 +2,10 @@
 
 namespace Test;
 
-use App\Models\Facility;
 use PHPUnit\Framework\TestCase;
+use App\Models\Facility;
 use App\Plugins\Db\Db;
 use App\Services\FacilityService;
-
 
 
 class FacilityServiceTest extends TestCase
@@ -121,7 +120,7 @@ class FacilityServiceTest extends TestCase
         $this->assertEquals($facilityMockData[0]['location_id'], $result['location_id']);
     }
 
-    public function testCreateFacility()
+    public function testCreate()
     {
         $data = [
             'name' => 'Amsterdam Create Venue',
@@ -130,7 +129,6 @@ class FacilityServiceTest extends TestCase
         ];
 
         $this->facilityService->db->method('executeQuery')->willReturn(true);
-        $this->facilityService->db->method('getLastInsertedId')->willReturn(123);
 
         $facility = $this->facilityService->create($data);
 
@@ -138,61 +136,40 @@ class FacilityServiceTest extends TestCase
         $this->assertEquals($data['name'], $facility->getName());
         $this->assertEquals($data['creation_date'], $facility->getCreationDate());
         $this->assertEquals($data['location_id'], $facility->getLocationId());
-     
     }
 
+    public function testEdit()
+    {
+        $facilityId = 1;
+        $data = [
+            'name' => 'Updated Venue Name',
+            'creation_date' => '2022-01-01',
+            'location_id' => 2,
+            'tags' => ['Tag1', 'Tag2']
+        ];
 
-    // public function testEditFacility()
-    // {
-    //     $facilityId = 1;
-    //     $data = [
-    //         'name' => 'Amsterdam Riverside Venue',
-    //         'creation_date' => '2029-05-10',
-    //         'location_id' => 1,
-    //         'tags' => ['Private Parties']
+        $this->facilityService->db->method('executeQuery')->willReturn(true);
+        $this->facilityService->db->method('getResults')->willReturn([['id' => $facilityId]]);
 
-    //     ];
+        $editedFacility = $this->facilityService->edit($facilityId, $data);
 
-    //     $this->facilityService->db->method('executeQuery')->willReturn(true);
+        $this->assertInstanceOf(Facility::class, $editedFacility);
+        $this->assertEquals($data['name'], $editedFacility->getName());
+        $this->assertEquals($data['creation_date'], $editedFacility->getCreationDate());
+        $this->assertEquals($data['location_id'], $editedFacility->getLocationId());
+    }
 
-    //     $this->facilityService->db->method('getResults')->willReturn([['id' => $facilityId]]);
+    public function testDelete()
+    {
+        $facilityId = 1;
 
-    //     // Esegui la funzione edit
-    //     $this->facilityService->edit($facilityId, $data);
+        $this->facilityService->db->method('executeQuery')->willReturn(true);
+        $this->facilityService->db->method('getResults')->willReturn([['id' => $facilityId]]);
 
-    //     // Verifica che il mock del database sia stato chiamato correttamente per l'aggiornamento
-    //     $this->facilityService->db->expects($this->exactly(4))->method('executeQuery');
+        $this->facilityService->delete($facilityId);
 
-    // }
-
-    // public function testDeleteFacility()
-    // {
-    //     // ID di esempio per la struttura da eliminare
-    //     $facilityId = 1;
-
-    //     // Assicurati che il mock del database sia configurato correttamente
-    //     $this->facilityService->db->method('executeQuery')->willReturn(true);
-
-    //     // Simula l'esistenza della struttura
-    //     $this->facilityService->db->method('getResults')->willReturn([['id' => $facilityId]]);
-
-    //     // Esegui la funzione delete
-    //     $this->facilityService->delete($facilityId);
-
-    //     // Verifica che il mock del database sia stato chiamato correttamente per la cancellazione
-    //     $this->facilityService->db->expects($this->exactly(2))->method('executeQuery');
-
-    //     // Altre verifiche necessarie, ad esempio verifica della cancellazione dei tag e degli employee associati
-    //     // ...
-    // }
-
-
-
-
-
-
-
-
+        $this->expectNotToPerformAssertions();
+    }
 
 
     // OTHER FUNCTIONS
@@ -359,16 +336,75 @@ class FacilityServiceTest extends TestCase
         $this->expectNotToPerformAssertions();
     }
 
-
-
-
-
-
-
-
-
-
-    public function tearDown(): void
+    public function testSearch()
     {
+        $pagination = ['limit' => 8, 'offset' => 0];
+        $data = [
+            'name' => 'Venue',
+            'tags' => 'Outdoor',
+            'location' => 'Ams'
+        ];
+
+        $this->facilityService->db->method('executeQuery')->willReturn(true);
+        $this->facilityService->db->method('getResults')->willReturn([
+            [
+                "id" => 8,
+                "name" => "Amsterdam Floating Venue",
+                "creation_date" => "2022-04-04",
+                "location_id" => 1,
+                "tags" => [
+                    "Corporate Events",
+                    "Outdoor"
+                ]
+            ],
+            [
+                "id" => 15,
+                "name" => "Amsterdam Museum Venue",
+                "creation_date" => "2017-05-05",
+                "location_id" => 1,
+                "tags" => [
+                    "Outdoor"
+                ]
+            ],
+            [
+                "id" => 16,
+                "name" => "Amsterdam Light Venue",
+                "creation_date" => "2017-05-05",
+                "location_id" => 1,
+                "tags" => [
+                    "Outdoor"
+                ]
+            ],
+            [
+                "id" => 17,
+                "name" => "Amsterdam Alley Venue",
+                "creation_date" => "2017-05-05",
+                "location_id" => 1,
+                "tags" => [
+                    "Outdoor"
+                ]
+            ],
+            [
+                "id" => 18,
+                "name" => "Amsterdam Toni Venue",
+                "creation_date" => "2017-05-05",
+                "location_id" => 1,
+                "tags" => [
+                    "Outdoor"
+                ]
+            ]
+        ]);
+
+        $results = $this->facilityService->search($pagination, $data);
+
+        $this->assertIsArray($results);
+
+        foreach ($results as $result) {
+            $this->assertArrayHasKey('id', $result);
+            $this->assertArrayHasKey('name', $result);
+            $this->assertArrayHasKey('creation_date', $result);
+            $this->assertArrayHasKey('location_id', $result);
+            $this->assertIsArray($result['tags']);
+        }
     }
 }

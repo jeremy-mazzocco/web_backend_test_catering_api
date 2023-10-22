@@ -65,7 +65,6 @@ class FacilityService extends Injectable
 
     public function create($data)
     {
-
         $facility = new Facility(
             $data['name'],
             $data['creation_date'],
@@ -234,7 +233,6 @@ class FacilityService extends Injectable
     }
 
 
-
     // OTHER FUNCTIONS:
 
     public function fetchDataLocationById(&$facility)
@@ -338,7 +336,7 @@ class FacilityService extends Injectable
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during facility verification.']);
         }
-        if (!$existingFacility = $this->db->getResults()) {
+        if (!$this->db->getResults()) {
             throw new Exceptions\NotFound(['message' => 'Not Found. Facility does not exist.']);
         }
     }
