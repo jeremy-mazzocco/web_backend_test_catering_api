@@ -138,7 +138,6 @@ class EmployeeService extends Injectable
     }
 
     public function fetchDataEmployee($employeeId)
-
     {
         $query = 'SELECT * FROM Employee WHERE id = :id';
         $bind = ['id' => $employeeId];
