@@ -14,7 +14,7 @@ class IndexController extends BaseController
     public function test()
     {
         // Respond with 200 (OK):
-        (new Status\Ok(['message' => 'Hello World!']))->send();
+        (new Status\Ok(['message' => 'Hello DTT!']))->send();
     }
 
 }

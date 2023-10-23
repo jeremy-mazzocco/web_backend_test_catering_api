@@ -62,6 +62,7 @@ class Db implements IDb
     }
 
     // Associate query
+    
     public function getResults(): array
     {
         return $this->stmt->fetchAll(\PDO::FETCH_ASSOC);

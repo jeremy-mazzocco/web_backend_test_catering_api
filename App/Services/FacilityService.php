@@ -40,7 +40,6 @@ class FacilityService extends Injectable
         $query = 'SELECT * FROM Facility WHERE id = :id';
         $bind = ['id' => $facilityId];
 
-
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['Message' => 'Internal Server Error. Failed to retrieve the facility.']);
         }
@@ -49,11 +48,9 @@ class FacilityService extends Injectable
             throw new Exceptions\NotFound(['Message' => 'Not Found. No facility found with the provided ID.']);
         }
 
-
         $facility = $facility[0];
 
         // Attach associated location, tags and employee
-
         $this->fetchDataLocationById($facility);
 
         $this->fetchDataTagsById($facility);
@@ -215,18 +212,8 @@ class FacilityService extends Injectable
 
         // Associate the tags to the facility
         foreach ($results as &$facility) {
-            $facilityId = $facility['id'];
-            $tagQuery = 'SELECT Tag.name FROM Tag
-                             INNER JOIN Facility_Tag ON Tag.id = Facility_Tag.tag_id
-                             WHERE Facility_Tag.facility_id = :facility_id';
-            $tagBind = ['facility_id' => $facilityId];
 
-            if ($this->db->executeQuery($tagQuery, $tagBind)) {
-                $tags = $this->db->getResults();
-                $facility['tags'] = array_column($tags, 'name');
-            } else {
-                throw new Exceptions\InternalServerError(['Message' => "Internal Server Error. Failed to retrieve tags for the facility."]);
-            }
+            $this->fetchDataTagsById($facility);
         }
 
         return $results;

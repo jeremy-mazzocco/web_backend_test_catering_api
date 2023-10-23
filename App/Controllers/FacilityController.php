@@ -25,7 +25,6 @@ try {
 
                     $results = $facilityService->AllFacilities($pagination);
 
-
                     (new Status\Ok($results))->send();
                 } catch (Exceptions\BadRequest $e) {
 
