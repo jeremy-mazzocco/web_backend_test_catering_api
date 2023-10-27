@@ -11,7 +11,7 @@ class EmployeeService extends Injectable
 {
     public function getByID($employeeId)
     {
-        $employee = $this->fetchDataEmployee($employeeId);
+        $employee = $this->getEmployeeData($employeeId);
 
         return $employee;
     }
@@ -19,10 +19,10 @@ class EmployeeService extends Injectable
     public function create($data)
     {
             // check if email is already in database
-            $this->isEmailRegistered($data);
+            $this->checkEmailExistence($data);
 
             // check if facility is already in database
-            $this->isFacilityExist($data['facility_id']);
+            $this->doesFacilityExist($data['facility_id']);
 
             $employee = new Employee(
                 $data['first_name'],
@@ -49,10 +49,10 @@ class EmployeeService extends Injectable
     public function edit($data, $employeeId)
     {
         // check if facility is already in database
-        $this->isEmployeeExist($employeeId);
+        $this->doesEmployeeExist($employeeId);
 
         // check if email is already in database
-        $this->isEmailRegistered($data);
+        $this->checkEmailExistence($data);
 
         $employee = new Employee(
             $data['first_name'],
@@ -82,7 +82,7 @@ class EmployeeService extends Injectable
     {
 
         // check if employee is already in database
-        $this->isEmployeeExist($employeeId);
+        $this->doesEmployeeExist($employeeId);
 
         $query = 'DELETE FROM Employee WHERE id = :employee_id';
         $bind = ['employee_id' => $employeeId];
@@ -93,9 +93,8 @@ class EmployeeService extends Injectable
     }
 
 
-
     // OTHER FUNCTIONS:
-    public function isEmailRegistered($employee)
+    public function checkEmailExistence($employee)
     {
         $emailQuery = 'SELECT id FROM Employee WHERE email = :email';
         $emailBind = ['email' => $employee['email']];
@@ -109,7 +108,7 @@ class EmployeeService extends Injectable
         }
     }
 
-    public function isFacilityExist($facilityId)
+    public function doesFacilityExist($facilityId)
     {
         // Check if the facility exists
         $query = 'SELECT id FROM Facility WHERE id = :facility_id';
@@ -123,7 +122,7 @@ class EmployeeService extends Injectable
         }
     }
 
-    public function isEmployeeExist($employeeId)
+    public function doesEmployeeExist($employeeId)
     {
         // Check if the facility exists
         $query = 'SELECT id FROM Employee WHERE id = :employee_id';
@@ -137,7 +136,7 @@ class EmployeeService extends Injectable
         }
     }
 
-    public function fetchDataEmployee($employeeId)
+    public function getEmployeeData($employeeId)
     {
         $query = 'SELECT * FROM Employee WHERE id = :id';
         $bind = ['id' => $employeeId];

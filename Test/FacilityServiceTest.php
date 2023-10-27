@@ -173,7 +173,7 @@ class FacilityServiceTest extends TestCase
 
 
     // OTHER FUNCTIONS
-    public function testFetchDataLocationById()
+    public function testgetLocationDataForFacility()
     {
         $facility = [
             'location_id' => 1,
@@ -193,7 +193,7 @@ class FacilityServiceTest extends TestCase
         $this->facilityService->db->method('executeQuery')->willReturn(true);
         $this->facilityService->db->method('getResults')->willReturn($locationMockData);
 
-        $result = $this->facilityService->fetchDataLocationById($facility);
+        $result = $this->facilityService->getLocationDataForFacility($facility);
 
         $this->assertIsArray($result);
         $this->assertCount(count($locationMockData[0]), $result);
@@ -205,7 +205,7 @@ class FacilityServiceTest extends TestCase
         $this->assertEquals($locationMockData[0]['phone_number'], $result['phone_number']);
     }
 
-    public function testFetchDataTagsById()
+    public function testgetTagsForFacility()
     {
         $facility = [
             'id' => 1,
@@ -222,7 +222,7 @@ class FacilityServiceTest extends TestCase
         $this->facilityService->db->method('executeQuery')->willReturn(true);
         $this->facilityService->db->method('getResults')->willReturn($tagsMonkData);
 
-        $this->facilityService->fetchDataTagsById($facility);
+        $this->facilityService->getTagsForFacility($facility);
 
         $this->assertIsArray($facility);
         $this->assertCount(count($tagsMonkData[0]), $facility);
@@ -230,7 +230,7 @@ class FacilityServiceTest extends TestCase
         $this->assertEquals($tagsMonkData[0]['name'], $facility['tags'][0]);
     }
 
-    public function testFetchDataEmployee()
+    public function testgetEmployeesForFacility()
     {
         $facility = [
             'id' => 6,
@@ -266,7 +266,7 @@ class FacilityServiceTest extends TestCase
         $this->facilityService->db->method('executeQuery')->willReturn(true);
         $this->facilityService->db->method('getResults')->willReturn($employeesData);
 
-        $this->facilityService->fetchDataEmployee($facility);
+        $this->facilityService->getEmployeesForFacility($facility);
         $facility = $facility['employees'];
 
         $this->assertIsArray($facility);
@@ -277,7 +277,7 @@ class FacilityServiceTest extends TestCase
         $this->assertEquals($employeesData[0]['email'], $facility[0]['email']);
     }
 
-    public function testCreateTag()
+    public function testassociateTagWithFacility()
     {
         $tagName = 'New Tag';
         $facilityId = 1;
@@ -285,7 +285,7 @@ class FacilityServiceTest extends TestCase
         $this->facilityService->db->method('executeQuery')->willReturn(true);
         $this->facilityService->db->method('getResults')->willReturn([]);
 
-        $this->facilityService->createTag($tagName, $facilityId);
+        $this->facilityService->associateTagWithFacility($tagName, $facilityId);
 
         $this->facilityService->db->expects($this->any(0))
             ->method('executeQuery')
@@ -304,7 +304,7 @@ class FacilityServiceTest extends TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    public function testIsFacilityExist()
+    public function testdoesFacilityExist()
     {
         $facilityId = 1;
 
@@ -320,18 +320,18 @@ class FacilityServiceTest extends TestCase
         $this->facilityService->db->method('executeQuery')->willReturn(true);
         $this->facilityService->db->method('getResults')->willReturn($facilityMockData);
 
-        $this->facilityService->isFacilityExist($facilityId);
+        $this->facilityService->doesFacilityExist($facilityId);
 
         $this->expectNotToPerformAssertions();
     }
 
-    public function testDeleteFacilityTags()
+    public function testremoveTagsFromFacility()
     {
         $facilityId = 1;
 
         $this->facilityService->db->method('executeQuery')->willReturn(true);
 
-        $this->facilityService->deleteFacilityTags($facilityId);
+        $this->facilityService->removeTagsFromFacility($facilityId);
 
         $this->expectNotToPerformAssertions();
     }

@@ -9,7 +9,14 @@ use App\Plugins\Http\Exceptions;
 
 class FacilityService extends Injectable
 {
-
+    /**
+     * Retrieves all facilities with pagination.
+     *
+     * @param array $pagination Associative array containing 'limit' and 'offset' keys for pagination.
+     * @return array Array of facilities with associated location, tags, and employees.
+     * @throws Exceptions\InternalServerError When there is an error executing the query.
+     * @throws Exceptions\BadRequest When there is an error fetching facilities.
+     */
     public function AllFacilities($pagination)
     {
         // Fetch all facility
@@ -25,16 +32,24 @@ class FacilityService extends Injectable
         // For each facility, attach associated location, tags and employee
         foreach ($facilities as &$facility) {
 
-            $this->fetchDataLocationById($facility);
+            $this->getLocationDataForFacility($facility);
 
-            $this->fetchDataTagsById($facility);
+            $this->getTagsForFacility($facility);
 
-            $this->fetchDataEmployee($facility);
+            $this->getEmployeesForFacility($facility);
         }
 
         return $facilities;
     }
 
+    /**
+     * Retrieves a facility by its ID.
+     *
+     * @param int $facilityId The ID of the facility.
+     * @return array Facility details with associated location, tags, and employees.
+     * @throws Exceptions\InternalServerError When there is an error executing the query.
+     * @throws Exceptions\NotFound When no facility is found for the given ID.
+     */
     public function getByID($facilityId)
     {
         $query = 'SELECT * FROM Facility WHERE id = :id';
@@ -51,15 +66,23 @@ class FacilityService extends Injectable
         $facility = $facility[0];
 
         // Attach associated location, tags and employee
-        $this->fetchDataLocationById($facility);
+        $this->getLocationDataForFacility($facility);
 
-        $this->fetchDataTagsById($facility);
+        $this->getTagsForFacility($facility);
 
-        $this->fetchDataEmployee($facility);
+        $this->getEmployeesForFacility($facility);
 
         return $facility;
     }
 
+    /**
+     * Creates a new facility.
+     *
+     * @param array $data Associative array containing the facility data (name, creation_date, location_id, tags).
+     * @return Facility The newly created facility.
+     * @throws Exceptions\InternalServerError When there is an error executing the query.
+     * @throws Exceptions\BadRequest When a facility with the same name and location already exists.
+     */
     public function create($data)
     {
         $facility = new Facility(
@@ -100,12 +123,20 @@ class FacilityService extends Injectable
         // Insert tags
         foreach ($data['tags'] as $tag) {
 
-            $this->createTag($tag, $facilityId);
+            $this->associateTagWithFacility($tag, $facilityId);
         }
 
         return $facility;
     }
 
+    /**
+     * Edits an existing facility.
+     *
+     * @param int $facilityId The ID of the facility to be edited.
+     * @param array $data Associative array containing data to update the facility with.
+     * @return Facility Returns the updated facility.
+     * @throws Exceptions\InternalServerError Throws an exception if there's an error during the update.
+     */
     public function edit($facilityId, $data)
     {
 
@@ -116,7 +147,7 @@ class FacilityService extends Injectable
             $data['tags']
         );
 
-        $this->isFacilityExist($facilityId);
+        $this->doesFacilityExist($facilityId);
 
         // Update the facility into the database
         $query = 'UPDATE Facility SET name = :name, creation_date = :creation_date, location_id = :location_id WHERE id = :facility_id';
@@ -131,21 +162,27 @@ class FacilityService extends Injectable
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to update facility.']);
         }
 
-        $this->deleteFacilityTags($facilityId);
+        $this->removeTagsFromFacility($facilityId);
 
         // Insert new tags
         foreach ($data['tags'] as $tag) {
 
-            $this->createTag($tag, $facilityId);
+            $this->associateTagWithFacility($tag, $facilityId);
         }
 
         return $facility;
     }
 
+    /**
+     * Deletes a facility and its associated entities.
+     *
+     * @param int $facilityId The ID of the facility to be deleted.
+     * @throws Exceptions\InternalServerError Throws an exception if there's an error during deletion.
+     */
     public function delete($facilityId)
     {
 
-        $this->isFacilityExist($facilityId);
+        $this->doesFacilityExist($facilityId);
 
         // Delete the employees associated with the facility
         $query = 'DELETE FROM Employee WHERE facility_id = :facility_id';
@@ -155,7 +192,7 @@ class FacilityService extends Injectable
             throw new Exceptions\InternalServerError(['Message' => 'Internal Server Error. Error deleting associated employees.']);
         }
 
-        $this->deleteFacilityTags($facilityId);
+        $this->removeTagsFromFacility($facilityId);
 
         // Delete the facility
         $query = 'DELETE FROM Facility WHERE id = :id';
@@ -166,6 +203,15 @@ class FacilityService extends Injectable
         }
     }
 
+    /**
+     * Searches for facilities based on provided criteria.
+     *
+     * @param array $pagination Associative array containing pagination data (limit and offset).
+     * @param array $data Associative array containing search criteria.
+     * @return array Returns an array of facilities that match the search criteria.
+     * @throws Exceptions\InternalServerError Throws an exception if there's an error executing the search query.
+     * @throws Exceptions\BadRequest Throws an exception if no facilities are found.
+     */
     public function search($pagination, $data)
     {
         // Query to join all tables
@@ -213,7 +259,7 @@ class FacilityService extends Injectable
         // Associate the tags to the facility
         foreach ($results as &$facility) {
 
-            $this->fetchDataTagsById($facility);
+            $this->getTagsForFacility($facility);
         }
 
         return $results;
@@ -222,7 +268,7 @@ class FacilityService extends Injectable
 
     // OTHER FUNCTIONS:
 
-    public function fetchDataLocationById(&$facility)
+    public function getLocationDataForFacility(&$facility)
     {
         $locationId = $facility['location_id'];
 
@@ -242,7 +288,7 @@ class FacilityService extends Injectable
         return $location;
     }
 
-    public function fetchDataTagsById(&$facility)
+    public function getTagsForFacility(&$facility)
     {
         $facilityId = $facility['id'];
 
@@ -263,7 +309,7 @@ class FacilityService extends Injectable
         return;
     }
 
-    public function fetchDataEmployee(&$facility)
+    public function getEmployeesForFacility(&$facility)
     {
         $facilityId = $facility['id'];
 
@@ -280,7 +326,7 @@ class FacilityService extends Injectable
         return;
     }
 
-    public function createTag(&$tag, $facilityId)
+    public function associateTagWithFacility(&$tag, $facilityId)
     {
         // select tag by name
         $query = 'SELECT id FROM Tag WHERE name = :name';
@@ -315,7 +361,7 @@ class FacilityService extends Injectable
         }
     }
 
-    public function isFacilityExist($facilityId)
+    public function doesFacilityExist($facilityId)
     {
         $query = 'SELECT id FROM Facility WHERE id = :facility_id';
         $bind = ['facility_id' => $facilityId];
@@ -328,7 +374,7 @@ class FacilityService extends Injectable
         }
     }
 
-    public function deleteFacilityTags($facilityId)
+    public function removeTagsFromFacility($facilityId)
     {
         $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
         $bind = ['facility_id' => $facilityId];

@@ -40,7 +40,7 @@ try {
             {
                 try {
 
-                    $this->validateId($facilityId);
+                    $this->validateFacilityId($facilityId);
 
                     $facilityService  = new FacilityService;
 
@@ -68,7 +68,7 @@ try {
 
                     $data = json_decode(file_get_contents("php://input"), true);
 
-                    $this->validateFacilityData($data);
+                    $this->validateFacilityInputData($data);
 
                     $facilityService  = new FacilityService();
 
@@ -98,9 +98,9 @@ try {
 
                     $data = json_decode(file_get_contents("php://input"), true);
 
-                    $this->validateFacilityData($data);
+                    $this->validateFacilityInputData($data);
 
-                    $this->validateId($facilityId);
+                    $this->validateFacilityId($facilityId);
 
                     $facilityService  = new FacilityService();
 
@@ -132,7 +132,7 @@ try {
 
                     $this->db->beginTransaction();
 
-                    $this->validateId($facilityId);
+                    $this->validateFacilityId($facilityId);
 
                     $facilityService  = new FacilityService();
 
@@ -165,7 +165,7 @@ try {
 
                     $pagination = $this->getPaginationParams();
 
-                    $this->validateFacilityDataSearch($data);
+                    $this->validateFacilitySearchInput($data);
 
                     $facilityService  = new FacilityService();
 
@@ -199,7 +199,7 @@ try {
                 return ['limit' => $limit, 'offset' => $offset];
             }
 
-            public function validateFacilityData($data)
+            public function validateFacilityInputData($data)
             {
                 if (!isset($data['name']) || !isset($data['creation_date']) || !isset($data['location_id']) || empty($data['name']) || empty($data['creation_date']) || empty($data['location_id'])) {
                     throw new Exceptions\BadRequest(['message' => 'Bad Request. Name, creation date, and location ID are required.']);
@@ -267,7 +267,7 @@ try {
                 }
             }
 
-            public function validateId($facilityId)
+            public function validateFacilityId($facilityId)
             {
                 if (isset($facilityId)) {
                     if (!filter_var($facilityId, FILTER_VALIDATE_INT, array("options" => array("min_range" => 1, "max_range" => 2147483647)))) {
@@ -276,7 +276,7 @@ try {
                 }
             }
 
-            public function validateFacilityDataSearch($data)
+            public function validateFacilitySearchInput($data)
             {
                 foreach ($data as $dataInput) {
 

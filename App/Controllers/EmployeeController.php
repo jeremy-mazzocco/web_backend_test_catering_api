@@ -18,7 +18,7 @@ try {
             {
                 try {
 
-                    $this->validateId($employeeId);
+                    $this->validateEmployeeId($employeeId);
 
                     $facilityEmployee  = new EmployeeService();
 
@@ -46,7 +46,7 @@ try {
 
                     $data = json_decode(file_get_contents("php://input"), true);
 
-                    $this->validateEmployeeData($data);
+                    $this->validateEmployeeInputData($data);
 
                     $facilityEmployee  = new EmployeeService();
 
@@ -76,9 +76,9 @@ try {
 
                     $data = json_decode(file_get_contents("php://input"), true);
 
-                    $this->validateEmployeeData($data);
+                    $this->validateEmployeeInputData($data);
 
-                    $this->validateId($employeeId);
+                    $this->validateEmployeeId($employeeId);
 
                     $facilityEmployee  = new EmployeeService();
 
@@ -110,7 +110,7 @@ try {
 
                     $this->db->beginTransaction();
 
-                    $this->validateId($employeeId);
+                    $this->validateEmployeeId($employeeId);
 
                     $facilityEmployee  = new EmployeeService();
 
@@ -136,7 +136,7 @@ try {
 
 
             // OTHER FUNCTIONS:
-            private function validateEmployeeData($data)
+            private function validateEmployeeInputData($data)
             {
                 // first name
                 if (!isset($data['first_name']) || !is_string($data['first_name']) || strlen($data['first_name']) > 255 || empty($data['first_name'])) {
@@ -166,7 +166,7 @@ try {
                 }
             }
 
-            public function validateId($employeeId)
+            public function validateEmployeeId($employeeId)
             {
                 if (isset($employeeId)) {
                     if (!filter_var($employeeId, FILTER_VALIDATE_INT, array("options" => array("min_range" => 1, "max_range" => 2147483647)))) {
