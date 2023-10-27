@@ -12,7 +12,7 @@ class FacilityService extends Injectable
     /**
      * Retrieves all facilities with pagination.
      *
-     * @param array $pagination Associative array containing 'limit' and 'offset' keys for pagination.
+     * @param array $pagination Associative array containing 'limit' and 'offset' keys.
      * @return array Array of facilities with associated location, tags, and employees.
      * @throws Exceptions\InternalServerError When there is an error executing the query.
      * @throws Exceptions\BadRequest When there is an error fetching facilities.
@@ -45,7 +45,7 @@ class FacilityService extends Injectable
     /**
      * Retrieves a facility by its ID.
      *
-     * @param int $facilityId The ID of the facility.
+     * @param int $facilityId.
      * @return array Facility details with associated location, tags, and employees.
      * @throws Exceptions\InternalServerError When there is an error executing the query.
      * @throws Exceptions\NotFound When no facility is found for the given ID.
@@ -79,7 +79,7 @@ class FacilityService extends Injectable
      * Creates a new facility.
      *
      * @param array $data Associative array containing the facility data (name, creation_date, location_id, tags).
-     * @return Facility The newly created facility.
+     * @return array Returns the created facility.
      * @throws Exceptions\InternalServerError When there is an error executing the query.
      * @throws Exceptions\BadRequest When a facility with the same name and location already exists.
      */
@@ -119,10 +119,9 @@ class FacilityService extends Injectable
 
         $facilityId = $this->db->getLastInsertedId();
 
-        $data['tags'] = [];
         // Insert tags
         foreach ($data['tags'] as $tag) {
-
+            
             $this->associateTagWithFacility($tag, $facilityId);
         }
 
@@ -132,9 +131,9 @@ class FacilityService extends Injectable
     /**
      * Edits an existing facility.
      *
-     * @param int $facilityId The ID of the facility to be edited.
+     * @param int $facilityId.
      * @param array $data Associative array containing data to update the facility with.
-     * @return Facility Returns the updated facility.
+     * @return array Returns the updated facility.
      * @throws Exceptions\InternalServerError Throws an exception if there's an error during the update.
      */
     public function edit($facilityId, $data)
@@ -174,9 +173,9 @@ class FacilityService extends Injectable
     }
 
     /**
-     * Deletes a facility and its associated entities.
+     * Deletes a facility and its associated.
      *
-     * @param int $facilityId The ID of the facility to be deleted.
+     * @param int $facilityId.
      * @throws Exceptions\InternalServerError Throws an exception if there's an error during deletion.
      */
     public function delete($facilityId)
@@ -206,8 +205,8 @@ class FacilityService extends Injectable
     /**
      * Searches for facilities based on provided criteria.
      *
-     * @param array $pagination Associative array containing pagination data (limit and offset).
-     * @param array $data Associative array containing search criteria.
+     * @param array $pagination array containing limit and offset.
+     * @param array $data array containing search criteria.
      * @return array Returns an array of facilities that match the search criteria.
      * @throws Exceptions\InternalServerError Throws an exception if there's an error executing the search query.
      * @throws Exceptions\BadRequest Throws an exception if no facilities are found.
@@ -268,6 +267,15 @@ class FacilityService extends Injectable
 
     // OTHER FUNCTIONS:
 
+
+    /**
+     * Retrieves location data for a given facility.
+     *
+     * @param array $facility Associative array containing facility data. The location data will be added to this array.
+     * @return array Returns the location data.
+     * @throws Exceptions\InternalServerError If there is an error executing the query.
+     * @throws Exceptions\NotFound If no location is found for the given facility.
+     */
     public function getLocationDataForFacility(&$facility)
     {
         $locationId = $facility['location_id'];
@@ -288,6 +296,13 @@ class FacilityService extends Injectable
         return $location;
     }
 
+    /**
+     * Retrieves tags associated with a given facility.
+     *
+     * @param array $facility Associative array containing facility data. The tags will be added to this array.
+     * @return void
+     * @throws Exceptions\InternalServerError If there is an error executing the query.
+     */
     public function getTagsForFacility(&$facility)
     {
         $facilityId = $facility['id'];
@@ -309,6 +324,13 @@ class FacilityService extends Injectable
         return;
     }
 
+    /**
+     * Retrieves employees associated with a given facility.
+     *
+     * @param array $facility Associative array containing facility data. The employees will be added to this array.
+     * @return void
+     * @throws Exceptions\InternalServerError If there is an error executing the query.
+     */
     public function getEmployeesForFacility(&$facility)
     {
         $facilityId = $facility['id'];
@@ -326,8 +348,17 @@ class FacilityService extends Injectable
         return;
     }
 
+    /**
+     * Associates a tag with a facility. If the tag doesn't exist, it will be created.
+     *
+     * @param string $tag The name of the tag to associate with the facility.
+     * @param int $facilityId The ID of the facility to associate with the tag.
+     * @return void
+     * @throws Exceptions\InternalServerError If there is an error during the tag check, creating a new tag, or associating the tag with the facility.
+     */
     public function associateTagWithFacility(&$tag, $facilityId)
     {
+
         // select tag by name
         $query = 'SELECT id FROM Tag WHERE name = :name';
         $bind = ['name' => $tag];
@@ -346,6 +377,7 @@ class FacilityService extends Injectable
             }
 
             $tagId = $this->db->getLastInsertedId();
+
         } else {
 
             // take id if exist
@@ -361,6 +393,14 @@ class FacilityService extends Injectable
         }
     }
 
+    /**
+     * Checks if a facility exists based on its ID.
+     *
+     * @param int $facilityId The ID of the facility to check.
+     * @return void
+     * @throws Exceptions\InternalServerError If there is an error executing the query.
+     * @throws Exceptions\NotFound If no facility is found with the provided ID.
+     */
     public function doesFacilityExist($facilityId)
     {
         $query = 'SELECT id FROM Facility WHERE id = :facility_id';
@@ -374,6 +414,13 @@ class FacilityService extends Injectable
         }
     }
 
+    /**
+     * Removes all tag associations from a facility.
+     *
+     * @param int $facilityId The ID of the facility from which to remove the tag associations.
+     * @return void
+     * @throws Exceptions\InternalServerError If there is an error removing the tag associations.
+     */
     public function removeTagsFromFacility($facilityId)
     {
         $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';

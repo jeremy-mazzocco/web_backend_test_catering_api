@@ -12,8 +12,11 @@ try {
     if (isset($_SESSION['authenticated']) && $_SESSION['authenticated']) {
         class FacilityController extends BaseController
         {
-
-            // GET ALL FACILITIES
+            /**
+             * Retrieves all the facilities with pagination.
+             *
+             * @return void
+             */
             public function getAllFacilities()
             {
                 try {
@@ -35,7 +38,12 @@ try {
                 }
             }
 
-            // GET FACILITY BY ID
+            /**
+             * Retrieves a specific facility by its ID.
+             *
+             * @param int $facilityId The ID of the facility to retrieve.
+             * @return void
+             */
             public function getFacilityById($facilityId)
             {
                 try {
@@ -59,7 +67,11 @@ try {
                 }
             }
 
-            // CREATE A FACILITY
+            /**
+             * Creates a new facility.
+             *
+             * @return void
+             */
             public function createFacility()
             {
                 try {
@@ -76,8 +88,7 @@ try {
 
                     $this->db->commit();
 
-
-                    (new Status\Created(['message' => 'Facility created successfully!']))->send();
+                    (new Status\Created())->send();
                 } catch (Exceptions\BadRequest $e) {
 
                     $this->db->rollBack();
@@ -89,7 +100,12 @@ try {
                 }
             }
 
-            // EDIT A FACILITY
+            /**
+             * Edits a specific facility.
+             *
+             * @param int $facilityId The ID of the facility to edit.
+             * @return void
+             */
             public function editFacility($facilityId)
             {
                 try {
@@ -125,7 +141,12 @@ try {
                 }
             }
 
-            // DELETE A FACILITY
+            /**
+             * Deletes a specific facility.
+             *
+             * @param int $facilityId The ID of the facility to delete.
+             * @return void
+             */
             public function deleteFacility($facilityId)
             {
                 try {
@@ -156,7 +177,11 @@ try {
                 }
             }
 
-            // SEARCH FACILITY
+            /**
+             * Searches for facilities based on specific criteria.
+             *
+             * @return void
+             */
             public function searchFacilities()
             {
                 try {
@@ -183,6 +208,13 @@ try {
 
 
             // OTHER FUNCTIONS:
+
+            /**
+             * Retrieves pagination parameters (limit and offset) from the request.
+             *
+             * @return array The pagination parameters including limit and offset.
+             * @throws Exceptions\BadRequest If the limit or page parameters are invalid.
+             */
             public function getPaginationParams()
             {
                 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 8;
@@ -199,6 +231,13 @@ try {
                 return ['limit' => $limit, 'offset' => $offset];
             }
 
+            /**
+             * Validates facility input data.
+             *
+             * @param array $data The data to validate.
+             * @return void
+             * @throws Exceptions\BadRequest If any of the input data is invalid.
+             */
             public function validateFacilityInputData($data)
             {
                 if (!isset($data['name']) || !isset($data['creation_date']) || !isset($data['location_id']) || empty($data['name']) || empty($data['creation_date']) || empty($data['location_id'])) {
@@ -267,6 +306,12 @@ try {
                 }
             }
 
+            /**
+             * Validates the provided facility ID.
+             *
+             * @param mixed $facilityId The facility ID to validate.
+             * @throws Exceptions\BadRequest If the facility ID is not an integer between 1 and 2147483647.
+             */
             public function validateFacilityId($facilityId)
             {
                 if (isset($facilityId)) {
@@ -276,6 +321,12 @@ try {
                 }
             }
 
+            /**
+             * Validates the input data for a facility search.
+             *
+             * @param array $data The input data to validate.
+             * @throws Exceptions\BadRequest If any of the input data is not a string or exceeds 255 characters.
+             */
             public function validateFacilitySearchInput($data)
             {
                 foreach ($data as $dataInput) {

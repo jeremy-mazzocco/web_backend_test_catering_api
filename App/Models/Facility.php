@@ -8,27 +8,55 @@ use App\Plugins\Http\Exceptions;
 
 class Facility extends Injectable
 {
+    /** @var string */
     private $name;
+
+    /** @var string */
     private $creation_date;
+
+    /** @var int */
     private $location_id;
+    
+    /** @var array */
     private $tags = [];
 
+    
     public function __construct($name, $creation_date, $location_id, $tags = [])
     {
+        /**
+         * Costruttore della classe Facility.
+         *
+         * @param string $name Il nome della struttura.
+         * @param string $creation_date La data di creazione nel formato 'YYYY-MM-DD'.
+         * @param int $location_id L'ID della posizione della struttura.
+         * @param array $tags Un array di tag associati alla struttura.
+         */
+
         $this->setName($name);
         $this->setCreationDate($creation_date);
         $this->setLocationId($location_id);
         $this->setTags($tags);
     }
 
+
     // The validations in the model can be reactivated to provide an additional layer of data integrity.
 
-    // name
+    
+    /**
+     * Restituisce il nome della struttura.
+     *
+     * @return string Il nome della struttura.
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * Imposta il nome della struttura.
+     *
+     * @param string $name Il nome della struttura.
+     */
     public function setName($name)
     {
         // if (!is_string($name) || strlen($name) > 255) {
@@ -42,12 +70,22 @@ class Facility extends Injectable
         $this->name = $name;
     }
 
-    // date
+
+    /**
+     * Restituisce la data di creazione della struttura nel formato 'YYYY-MM-DD'.
+     *
+     * @return string La data di creazione della struttura.
+     */
     public function getCreationDate()
     {
         return $this->creation_date;
     }
 
+    /**
+     * Imposta la data di creazione della struttura.
+     *
+     * @param string $creation_date La data di creazione nel formato 'YYYY-MM-DD'.
+     */
     public function setCreationDate($creation_date)
     {
         // $date = \DateTime::createFromFormat('Y-m-d', $creation_date);
@@ -63,12 +101,22 @@ class Facility extends Injectable
         $this->creation_date = $creation_date;
     }
 
-    // location
+
+     /**
+     * Restituisce l'ID della posizione della struttura.
+     *
+     * @return int L'ID della posizione.
+     */
     public function getLocationId()
     {
         return $this->location_id;
     }
 
+    /**
+     * Imposta l'ID della posizione della struttura.
+     *
+     * @param int $location_id L'ID della posizione.
+     */
     public function setLocationId($location_id)
     {
         // if (!is_numeric($location_id) || ($location_id < 1 || $location_id > 7)) {
@@ -82,12 +130,22 @@ class Facility extends Injectable
         $this->location_id = $location_id;
     }
 
-    // tags
+
+     /**
+     * Restituisce un array di tag associati alla struttura.
+     *
+     * @return array Un array di tag.
+     */
     public function getTags()
     {
         return $this->tags;
     }
 
+     /**
+     * Imposta un array di tag associati alla struttura.
+     *
+     * @param array $tags Un array di tag.
+     */
     public function setTags($tags)
     {
         // // array tags

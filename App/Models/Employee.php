@@ -7,11 +7,29 @@ use App\Plugins\Http\Exceptions;
 
 class Employee extends Injectable
 {
+    /** @var string */
     private $first_name;
+
+    /** @var string */
     private $last_name;
+
+    /** @var string */
     private $role;
+
+    /** @var int */
     private $facility_id;
+    
+    /** @var string */
     private $email;
+
+    /**
+     * Employee constructor.
+     * @param string $first_name
+     * @param string $last_name
+     * @param string $role
+     * @param int $facility_id
+     * @param string $email
+     */
 
     public function __construct($first_name, $last_name, $role, $facility_id, $email)
     {
@@ -22,14 +40,24 @@ class Employee extends Injectable
         $this->setEmail($email);
     }
 
+
     // The validations in the model can be reactivated to provide an additional layer of data integrity.
 
-    // first_name
+
+    /**
+     * Get first name
+     * @return string
+     */
+
     public function getFirstName()
     {
         return $this->first_name;
-       
     }
+
+    /**
+     * Set first name
+     * @param string $first_name
+     */
 
     public function setFirstName($first_name)
     {
@@ -44,11 +72,21 @@ class Employee extends Injectable
         $this->first_name = $first_name;
     }
 
-    // last_name
+
+    /**
+     * Get last name
+     * @return string
+     */
+
     public function getLastName()
     {
         return $this->last_name;
     }
+
+    /**
+     * Set last name
+     * @param string $last_name
+     */
 
     public function setLastName($last_name)
     {
@@ -63,11 +101,21 @@ class Employee extends Injectable
         $this->last_name = $last_name;
     }
 
-    // role
+
+    /**
+     * Get role
+     * @return string
+     */
+
     public function getRole()
     {
         return $this->role;
     }
+
+    /**
+     * Set role
+     * @param string $role
+     */
 
     public function setRole($role)
     {
@@ -82,11 +130,21 @@ class Employee extends Injectable
         $this->role = $role;
     }
 
-    // facility_id
+
+    /**
+     * Get facility ID
+     * @return int
+     */
+
     public function getFacilityId()
     {
         return $this->facility_id;
     }
+
+    /**
+     * Set facility ID
+     * @param int $facility_id
+     */
 
     public function setFacilityId($facility_id)
     {
@@ -101,11 +159,21 @@ class Employee extends Injectable
         $this->facility_id = $facility_id;
     }
 
-    // email
+
+    /**
+     * Get email
+     * @return string
+     */
+
     public function getEmail()
     {
         return $this->email;
     }
+
+    /**
+     * Set email
+     * @param string $email
+     */
 
     public function setEmail($email)
     {

@@ -12,8 +12,11 @@ try {
     if (isset($_SESSION['authenticated']) && $_SESSION['authenticated']) {
         class EmployeeController extends BaseController
         {
-
-            // GET EMPLOYEE BY ID
+            /**
+             * Retrieves an employee by their ID.
+             *
+             * @param int $employeeId The ID of the employee to retrieve.
+             */
             public function getEmployeeById($employeeId)
             {
                 try {
@@ -37,7 +40,10 @@ try {
                 }
             }
 
-            // CREATE AN EMPLOYEE
+
+            /**
+             * Creates a new employee.
+             */
             public function createEmployee()
             {
                 try {
@@ -67,7 +73,11 @@ try {
                 }
             }
 
-            // EDIT A FACILITY
+            /**
+             * Edits an existing employee's information.
+             *
+             * @param int $employeeId The ID of the employee to edit.
+             */
             public function editEmployee($employeeId)
             {
                 try {
@@ -103,7 +113,11 @@ try {
                 }
             }
 
-            // DELETE AN EMPLOYEE
+            /**
+             * Deletes an employee by their ID.
+             *
+             * @param int $employeeId The ID of the employee to delete.
+             */
             public function deleteEmployee($employeeId)
             {
                 try {
@@ -136,6 +150,13 @@ try {
 
 
             // OTHER FUNCTIONS:
+
+            /**
+             * Validates the input data for creating or editing an employee.
+             *
+             * @param array $data The input data to validate.
+             * @throws Exceptions\BadRequest If the input data is invalid.
+             */
             private function validateEmployeeInputData($data)
             {
                 // first name
@@ -166,6 +187,12 @@ try {
                 }
             }
 
+            /**
+             * Validates the provided employee ID.
+             *
+             * @param int $employeeId The ID of the employee to validate.
+             * @throws Exceptions\BadRequest If the employee ID is not valid.
+             */
             public function validateEmployeeId($employeeId)
             {
                 if (isset($employeeId)) {
