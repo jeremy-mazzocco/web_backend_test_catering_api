@@ -437,5 +437,15 @@ class FacilityService extends Injectable
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to remove existing tag associations.']);
         }
+
+        // remove tags that are not associated with any facility
+        $query = 'DELETE FROM Tag WHERE id NOT IN (SELECT tag_id FROM Facility_Tag)';
+
+        if (!$this->db->executeQuery($query)) {
+            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to remove unused tags.']);
+        }
+
+        return;
+
     }
 }
