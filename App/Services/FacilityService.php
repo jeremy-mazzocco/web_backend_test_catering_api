@@ -19,17 +19,23 @@ class FacilityService extends Injectable
      */
     public function AllFacilities($pagination)
     {
+
         // Fetch all facility
-        $query = 'SELECT * FROM Facility LIMIT ' . $pagination['limit'] . ' OFFSET ' . $pagination['offset'];
+        $query = 'SELECT * FROM Facility';
+
+        if ($pagination['limit'] !== null) {
+            $query .= ' LIMIT ' . $pagination['limit'] . ' OFFSET ' . $pagination['offset'];
+        }
 
         if (!$this->db->executeQuery($query)) {
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Error fetching facilities from the database.']);
         }
+
         if (!$facilities = $this->db->getResults()) {
             throw new Exceptions\BadRequest(['message' => 'Bad Request. Error fetching facilities from the database.']);
         }
 
-        // For each facility, attach associated location, tags and employee
+        // For each facility, attach associated location, tags, and employee
         foreach ($facilities as &$facility) {
 
             $this->getLocationDataForFacility($facility);
@@ -41,6 +47,7 @@ class FacilityService extends Injectable
 
         return $facilities;
     }
+
 
     /**
      * Retrieves a facility by its ID.
@@ -121,7 +128,7 @@ class FacilityService extends Injectable
 
         // Insert tags
         foreach ($data['tags'] as $tag) {
-            
+
             $this->associateTagWithFacility($tag, $facilityId);
         }
 
@@ -240,12 +247,13 @@ class FacilityService extends Injectable
             $bind['location'] = '%' . $data['location'] . '%';
         }
 
-
-        // Add pagination to the query
         if ($conditions) {
             $query .= ' WHERE ' . implode(' AND ', $conditions);
         }
-        $query .= ' LIMIT ' . $pagination['limit'] . ' OFFSET ' . $pagination['offset'];
+
+        if ($pagination['limit'] !== null) {
+            $query .= ' LIMIT ' . $pagination['limit'] . ' OFFSET ' . $pagination['offset'];
+        }
 
         if (!$this->db->executeQuery($query, $bind)) {
             throw new Exceptions\InternalServerError(['Message' => "Internal Server Error. Failed to execute the search query."]);
@@ -265,8 +273,9 @@ class FacilityService extends Injectable
     }
 
 
-    // OTHER FUNCTIONS:
 
+
+    // OTHER FUNCTIONS:
 
     /**
      * Retrieves location data for a given facility.
@@ -377,7 +386,6 @@ class FacilityService extends Injectable
             }
 
             $tagId = $this->db->getLastInsertedId();
-
         } else {
 
             // take id if exist

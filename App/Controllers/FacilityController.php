@@ -217,19 +217,24 @@ try {
              */
             public function getPaginationParams()
             {
-                $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 8;
+                $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : null;
                 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
-                if ($limit < 1 || $limit > 100) {
+                $offset = null;
+
+                if ($limit !== null && ($limit < 1 || $limit > 100)) {
                     throw new Exceptions\BadRequest(['Message' => 'Bad Request. Limit must be between 1 and 100.']);
                 }
+
                 if ($page < 1) {
                     throw new Exceptions\BadRequest(['Message' => 'Bad Request. Page number must be positive.']);
                 }
 
                 $offset = ($page - 1) * $limit;
+
                 return ['limit' => $limit, 'offset' => $offset];
             }
+
 
             /**
              * Validates facility input data.
@@ -336,6 +341,7 @@ try {
                     }
                 }
             }
+            
         }
     } else {
 

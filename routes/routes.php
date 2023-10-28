@@ -16,7 +16,7 @@ $router->post('/logout', App\Controllers\AuthController::class . '@logoutUser');
 $router->get('/facilities', App\Controllers\FacilityController::class . '@getAllFacilities');
 
 // search
-$router->post('/search/facilities', App\Controllers\FacilityController::class . '@searchFacilities');
+$router->get('/search/facilities', App\Controllers\FacilityController::class . '@searchFacilities');
 
 // create
 $router->post('/facility', App\Controllers\FacilityController::class . '@createFacility');
