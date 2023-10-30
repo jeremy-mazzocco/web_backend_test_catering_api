@@ -8,6 +8,421 @@
 	},
 	"item": [
 		{
+			"name": "User Auth",
+			"item": [
+				{
+					"name": "REGISTER NEW USER",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"username\",                         // no special character, min:4 max: 255 \r\n    \"password\": \"secret\"                            // min:4 max: 255   \r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"register"
+							]
+						},
+						"description": "Register a new user in Database. All field can't be empty."
+					},
+					"response": []
+				},
+				{
+					"name": "LOGIN USER",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"username\",                         \r\n    \"password\": \"secret\"                            \r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Login user"
+					},
+					"response": []
+				},
+				{
+					"name": "LOGOUT USER",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"access_token\": \"\"                                                 \r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Facility",
+			"item": [
+				{
+					"name": "SEARCH",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"venue\",               // string, maximum 255 character\r\n    \"tags\": \"Outdoor\",             // string, maximum 255 character\r\n    \"location\": \"ams\"              // string, maximum 255 character\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/search/facilities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"facilities"
+							]
+						},
+						"description": "Search facility through name, tags, location. Field can be partials and empty."
+					},
+					"response": []
+				},
+				{
+					"name": "GET ALL",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/facilities?limit=10&page=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"facilities"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Get all Databese, pagination set at 8 results per page."
+					},
+					"response": []
+				},
+				{
+					"name": "FACILITY BY ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/facility/16",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"facility",
+								"16"
+							]
+						},
+						"description": "Get facility by ID, set ID in url"
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE FACILITY",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Create Facilty\",                // string, maximum 255 character\r\n    \"creation_date\": \"2011-02-02\",           // date format YYYY-MM-DD\r\n    \"location_id\": 7,                        // integer from 1 to 7\r\n    \"tags\": [\"New Tag\",\"Outdoor\"]            // array[], strings, min: 0 tags, max: 5 tags\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/facility",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"facility"
+							]
+						},
+						"description": "Create a Facility. All field can't be empty. Tag can be empty but within \\[ \\]."
+					},
+					"response": []
+				},
+				{
+					"name": "EDIT FACILITY",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Edit Facilty\",                      // string, maximum 255 character\r\n    \"creation_date\": \"2011-02-12\",               // date format YYYY-MM-DD\r\n    \"location_id\": 1,                            // integer from 1 to 7\r\n    \"tags\": [\"Outdoor\", \"Change Tag\"]            // array[], strings, min: 0 tags, max: 5 tags\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/facility/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"facility",
+								"1"
+							]
+						},
+						"description": "Edit a Facility. All field can't be empty. Tag can be empty but within \\[ \\]."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE FACILTY",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/facility/200",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"facility",
+								"200"
+							]
+						},
+						"description": "Delete facility by ID, set ID in url"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Employee",
+			"item": [
+				{
+					"name": "EMPLOYEE BY ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/employee/200",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"employee",
+								"200"
+							]
+						},
+						"description": "Get an Employee by ID, set ID in url"
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE EMPLOYEE",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "  \r\n{\r\n    \"email\":\"new@gmail.com\",          // email, maximum 255 character\r\n    \"first_name\": \"Jeremy\",             // string, maximum 255 character\r\n    \"last_name\": \"Mazzocco\",            // string, maximum 255 character\r\n    \"role_id\": 2,                       // integer from 1 to 7\r\n    \"facility_id\": 10                   // integer\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/employee",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"employee"
+							]
+						},
+						"description": "Create an Employee. All field can't be empty."
+					},
+					"response": []
+				},
+				{
+					"name": "EDIT EMPLOYEE",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n{\r\n    \"email\":\"edit@gmail.com\",            // email, maximum 255 character\r\n    \"first_name\": \"Edit\",                   // string, maximum 255 character\r\n    \"last_name\": \"Edit\",                // string, maximum 255 character\r\n    \"role_id\": 5,                       // integer from 1 to 7\r\n    \"facility_id\": 7                    // integer\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/employee/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"employee",
+								"1"
+							]
+						},
+						"description": "Edit an Employee. All field can't be empty."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE EMPLOYEE",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/employee/449",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"employee",
+								"449"
+							]
+						},
+						"description": "Delete an Employee by ID, set ID in url"
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Test API",
 			"request": {
 				"method": "GET",
@@ -22,383 +437,6 @@
 					]
 				},
 				"description": "API call used to test local development environment and database connection.\\\\n\\\\nShould print _'Hello World!'_ if all is OK."
-			},
-			"response": []
-		},
-		{
-			"name": "REGISTER NEW USER",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"username\",                         // no special character, min:4 max: 255 \r\n    \"password\": \"secret\"                            // min:4 max: 255 \r\n    \r\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/register",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"register"
-					]
-				},
-				"description": "Register a new user in Database. All field can't be empty."
-			},
-			"response": []
-		},
-		{
-			"name": "LOGIN USER",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"username\",                         \r\n    \"password\": \"secret\"                            \r\n    \r\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/login",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"login"
-					]
-				},
-				"description": "Login user"
-			},
-			"response": []
-		},
-		{
-			"name": "LOGOUT USER",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/logout",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"logout"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET ALL",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{baseUrl}}/facilities",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"facilities"
-					]
-				},
-				"description": "Get all Databese, pagination set at 8 results per page."
-			},
-			"response": []
-		},
-		{
-			"name": "SEARCH",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"venue\",               // string, maximum 255 character\r\n    \"tags\": \"Outdoor\",             // string, maximum 255 character\r\n    \"location\": \"ams\"              // string, maximum 255 character\r\n}\r\n",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/search/facilities",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"search",
-						"facilities"
-					]
-				},
-				"description": "Search facility through name, tags, location. Field can be partials and empty."
-			},
-			"response": []
-		},
-		{
-			"name": "FACILITY BY ID",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "",
-						"value": "",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/facility/16",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"facility",
-						"16"
-					]
-				},
-				"description": "Get facility by ID, set ID in url"
-			},
-			"response": []
-		},
-		{
-			"name": "CREATE FACILITY",
-			"protocolProfileBehavior": {
-				"disabledSystemHeaders": {}
-			},
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Create Facilty\",                // string, maximum 255 character\r\n    \"creation_date\": \"2011-02-02\",           // date format YYYY-MM-DD\r\n    \"location_id\": 7,                        // integer from 1 to 7\r\n    \"tags\": [\"New Tag\",\"Outdoor\"]            // array[], strings, min: 0 tags, max: 5 tags\r\n}\r\n\r\n",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/facility",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"facility"
-					]
-				},
-				"description": "Create a Facility. All field can't be empty. Tag can be empty but within \\[ \\]."
-			},
-			"response": []
-		},
-		{
-			"name": "EDIT FACILITY",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Edit Facilty\",                      // string, maximum 255 character\r\n    \"creation_date\": \"2011-02-12\",               // date format YYYY-MM-DD\r\n    \"location_id\": 1,                            // integer from 1 to 7\r\n    \"tags\": [\"Outdoor\", \"Change Tag\"]            // array[], strings, min: 0 tags, max: 5 tags\r\n}\r\n",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/facility/1",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"facility",
-						"1"
-					]
-				},
-				"description": "Edit a Facility. All field can't be empty. Tag can be empty but within \\[ \\]."
-			},
-			"response": []
-		},
-		{
-			"name": "DELETE FACILTY",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/facility/200",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"facility",
-						"200"
-					]
-				},
-				"description": "Delete facility by ID, set ID in url"
-			},
-			"response": []
-		},
-		{
-			"name": "EMPLOYEE BY ID",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "",
-						"value": "",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/employee/200",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"employee",
-						"200"
-					]
-				},
-				"description": "Get an Employee by ID, set ID in url"
-			},
-			"response": []
-		},
-		{
-			"name": "CREATE EMPLOYEE",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "  \r\n{\r\n    \"email\":\"new@gmail.com\",          // email, maximum 255 character\r\n    \"first_name\": \"Jeremy\",             // string, maximum 255 character\r\n    \"last_name\": \"Mazzocco\",            // string, maximum 255 character\r\n    \"role\": \"Web Developer\",            // string, maximum 255 character\r\n    \"facility_id\": 10                   // integer\r\n}\r\n"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/employee",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"employee"
-					]
-				},
-				"description": "Create an Employee. All field can't be empty."
-			},
-			"response": []
-		},
-		{
-			"name": "EDIT EMPLOYEE",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "\r\n{\r\n    \"email\":\"edit@gmail.com\",            // email, maximum 255 character\r\n    \"first_name\": \"Edit\",                   // string, maximum 255 character\r\n    \"last_name\": \"Edit\",                // string, maximum 255 character\r\n    \"role\": \"Edit\",                      // string, maximum 255 character\r\n    \"facility_id\": 7                    // integer\r\n}\r\n"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/employee/1",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"employee",
-						"1"
-					]
-				},
-				"description": "Edit an Employee. All field can't be empty."
-			},
-			"response": []
-		},
-		{
-			"name": "DELETE EMPLOYEE",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{baseUrl}}/employee/449",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"employee",
-						"449"
-					]
-				},
-				"description": "Delete an Employee by ID, set ID in url"
 			},
 			"response": []
 		}
