@@ -191,7 +191,7 @@ class FacilityService extends Injectable
      */
     public function delete($facilityId)
     {
-
+        
         $this->doesFacilityExist($facilityId);
 
         // Delete the employees associated with the facility
