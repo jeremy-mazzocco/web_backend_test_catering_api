@@ -82,6 +82,7 @@ class FacilityService extends Injectable
         return $facility;
     }
 
+
     /**
      * Creates a new facility.
      *
@@ -135,6 +136,7 @@ class FacilityService extends Injectable
         return $facility;
     }
 
+
     /**
      * Edits an existing facility.
      *
@@ -145,7 +147,6 @@ class FacilityService extends Injectable
      */
     public function edit($facilityId, $data)
     {
-
         $facility = new Facility(
             $data['name'],
             $data['creation_date'],
@@ -154,6 +155,8 @@ class FacilityService extends Injectable
         );
 
         $this->doesFacilityExist($facilityId);
+
+        $this->removeTagsFromFacility($facilityId);
 
         // Update the facility into the database
         $query = 'UPDATE Facility SET name = :name, creation_date = :creation_date, location_id = :location_id WHERE id = :facility_id';
@@ -168,16 +171,17 @@ class FacilityService extends Injectable
             throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to update facility.']);
         }
 
-        $this->removeTagsFromFacility($facilityId);
-
         // Insert new tags
-        foreach ($data['tags'] as $tag) {
+        if (!empty($data['tags'])) {
 
-            $this->associateTagWithFacility($tag, $facilityId);
+            foreach ($data['tags'] as $tag) {
+                $this->associateTagWithFacility($tag, $facilityId);
+            }
         }
 
         return $facility;
     }
+
 
     /**
      * Deletes a facility and its associated.
@@ -208,6 +212,7 @@ class FacilityService extends Injectable
             throw new Exceptions\InternalServerError(['Message' => 'Internal Server Error. Error deleting the facility.']);
         }
     }
+
 
     /**
      * Searches for facilities based on provided criteria.
@@ -304,6 +309,7 @@ class FacilityService extends Injectable
         return $location;
     }
 
+
     /**
      * Retrieves tags associated with a given facility.
      *
@@ -332,6 +338,7 @@ class FacilityService extends Injectable
         return;
     }
 
+
     /**
      * Retrieves employees associated with a given facility.
      *
@@ -355,6 +362,7 @@ class FacilityService extends Injectable
 
         return;
     }
+
 
     /**
      * Associates a tag with a facility. If the tag doesn't exist, it will be created.
@@ -400,6 +408,7 @@ class FacilityService extends Injectable
         }
     }
 
+
     /**
      * Checks if a facility exists based on its ID.
      *
@@ -421,6 +430,7 @@ class FacilityService extends Injectable
         }
     }
 
+    
     /**
      * Removes all tag associations from a facility.
      *
@@ -431,7 +441,8 @@ class FacilityService extends Injectable
     public function removeTagsFromFacility($facilityId)
     {
         $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id;
-                  DELETE FROM Tag WHERE id NOT IN (SELECT tag_id FROM Facility_Tag)';
+        DELETE FROM Tag WHERE id NOT IN (SELECT tag_id FROM Facility_Tag)';
+               
         $bind = ['facility_id' => $facilityId];
 
         if (!$this->db->executeQuery($query, $bind)) {

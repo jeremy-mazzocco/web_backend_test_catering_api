@@ -38,6 +38,7 @@ try {
                 }
             }
 
+
             /**
              * Retrieves a specific facility by its ID.
              *
@@ -66,6 +67,7 @@ try {
                     (new Status\BadRequest(['message' => $e->getMessage()]))->send();
                 }
             }
+
 
             /**
              * Creates a new facility.
@@ -99,6 +101,7 @@ try {
                     (new Status\InternalServerError(['message' => $e->getMessage()]))->send();
                 }
             }
+
 
             /**
              * Edits a specific facility.
@@ -141,6 +144,7 @@ try {
                 }
             }
 
+
             /**
              * Deletes a specific facility.
              *
@@ -176,6 +180,7 @@ try {
                     (new Status\NotFound(['message' => $e->getMessage()]))->send();
                 }
             }
+
 
             /**
              * Searches for facilities based on specific criteria.
@@ -235,6 +240,7 @@ try {
                 return ['limit' => $limit, 'offset' => $offset];
             }
 
+
             /**
              * Validates facility input data.
              *
@@ -245,7 +251,7 @@ try {
             public function validateFacilityInputData($data)
             {
                 if (!isset($data['name']) || !isset($data['creation_date']) || !isset($data['location_id']) || empty($data['name']) || empty($data['creation_date']) || empty($data['location_id'])) {
-                    throw new Exceptions\BadRequest(['message' => 'Bad Request. Name, creation date, and location ID are required.']);
+                    throw new Exceptions\BadRequest(['message' => 'Bad Request. Name, creation date, tags and location ID are required.']);
                 }
 
                 // facility name
@@ -274,7 +280,7 @@ try {
                     // each tag
                     foreach ($data['tags'] as $tag) {
                         if (is_numeric($tag) || empty($tag)) {
-                            throw new Exceptions\BadRequest(['message' => 'Bad Request. Tags must be non-numeric.']);
+                            throw new Exceptions\BadRequest(['message' => 'Bad Request. Tags must be non-numeric and not empty string.']);
                         }
                     }
                 }
@@ -310,6 +316,7 @@ try {
                 }
             }
 
+
             /**
              * Validates the provided facility ID.
              *
@@ -325,6 +332,7 @@ try {
                 }
             }
 
+            
             /**
              * Validates the input data for a facility search.
              *
