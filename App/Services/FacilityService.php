@@ -274,7 +274,6 @@ class FacilityService extends Injectable
 
 
 
-
     // OTHER FUNCTIONS:
 
     /**
@@ -431,21 +430,14 @@ class FacilityService extends Injectable
      */
     public function removeTagsFromFacility($facilityId)
     {
-        $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id';
+        $query = 'DELETE FROM Facility_Tag WHERE facility_id = :facility_id;
+                  DELETE FROM Tag WHERE id NOT IN (SELECT tag_id FROM Facility_Tag)';
         $bind = ['facility_id' => $facilityId];
 
         if (!$this->db->executeQuery($query, $bind)) {
-            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to remove existing tag associations.']);
-        }
-
-        // remove tags that are not associated with any facility
-        $query = 'DELETE FROM Tag WHERE id NOT IN (SELECT tag_id FROM Facility_Tag)';
-
-        if (!$this->db->executeQuery($query)) {
-            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to remove unused tags.']);
+            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to remove tags and associations.']);
         }
 
         return;
-
     }
 }

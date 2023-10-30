@@ -61,7 +61,7 @@ try {
                     $this->db->commit();
 
 
-                    (new Status\Created(['message' => 'Employee created successfully!']))->send();
+                    (new Status\Created())->send();
                 } catch (Exceptions\BadRequest $e) {
 
                     $this->db->rollBack();
@@ -170,8 +170,10 @@ try {
                 }
 
                 // role
-                if (!isset($data['role']) || !is_string($data['role']) || strlen($data['role']) > 255 || empty($data['first_name'])) {
-                    throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's role must be a string, less than 256 characters and it can't be empty."]);
+                if (isset($data['role_id']) || empty($data['role_id'])) {
+                    if (!filter_var($data['role_id'], FILTER_VALIDATE_INT, array("options" => array("min_range" => 1, "max_range" => 2147483647)))) {
+                        throw new Exceptions\BadRequest(['message' => "Bad Request. role ID must be an integer between 1 and 2147483647 and it can't be empty."]);
+                    }
                 }
 
                 // facility_id

@@ -235,7 +235,6 @@ try {
                 return ['limit' => $limit, 'offset' => $offset];
             }
 
-
             /**
              * Validates facility input data.
              *

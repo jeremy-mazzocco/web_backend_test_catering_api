@@ -8,21 +8,37 @@ use App\Plugins\Http\Exceptions;
 
 class AuthService extends Injectable
 {
-    public function isUsernameTaken($data)
+
+    /**
+     * Checks if a given username is already taken.
+     * 
+     * @param array $data An associative array containing a 'username' key.
+     * 
+     * @return void
+     * 
+     * @throws Exceptions\InternalServerError If there's an error fetching user from the database.
+     */
+    public function doesUsernameIsTaken($data)
     {
         $username = $data['username'];
 
-        // check if user is already registered
         $query = "SELECT * FROM users WHERE username = '$username'";
         if (!$this->db->executeQuery($query)) {
-            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Error fetching facilities from the database.']);
-        } 
+            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Error fetching user from the database.']);
+        }
     }
 
+    /**
+     * Hashes a given password and inserts the username and hashed password into the database.
+     * 
+     * @param array $data An associative array containing 'username' and 'password' keys.
+     * 
+     * @return void
+     */
     public function hashPassword($data)
     {
-        // Hash password
         $password = $data['password'];
+
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
         $query = "INSERT INTO users (username, password_hash) VALUES (?, ?)";

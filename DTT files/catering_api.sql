@@ -31,7 +31,7 @@ CREATE TABLE `employee` (
   `id` int(11) NOT NULL,
   `first_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
-  `role` varchar(255) NOT NULL,
+  `role_id` int(11) NOT NULL,
   `facility_id` int(11) NOT NULL,
   `email` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -40,51 +40,76 @@ CREATE TABLE `employee` (
 -- Dumping data for table `employee`
 --
 
-INSERT INTO `employee` (`id`, `first_name`, `last_name`, `role`, `facility_id`, `email`) VALUES
-(1, 'John', 'Doe', 'Manager', 1, 'john.doe@example.com'),
-(2, 'Jane', 'Doe', 'Chef', 2, 'jane.doe@example.com'),
-(3, 'Jim', 'Beam', 'Security', 3, 'jim.beam@example.com'),
-(4, 'Jack', 'Daniels', 'Bartender', 4, 'jack.daniels@example.com'),
-(5, 'Mary', 'Poppins', 'Coordinator', 5, 'mary.poppins@example.com'),
-(6, 'Harry', 'Potter', 'Magician', 1, 'harry.potter@example.com'),
-(7, 'Hermione', 'Granger', 'Manager', 7, 'hermione.granger@example.com'),
-(8, 'Ron', 'Weasley', 'Chef', 1, 'ron.weasley@example.com'),
-(9, 'Draco', 'Malfoy', 'Security', 2, 'draco.malfoy@example.com'),
-(10, 'Neville', 'Longbottom', 'Gardener', 3, 'neville.longbottom@example.com'),
-(11, 'Luna', 'Lovegood', 'Singer', 4, 'luna.lovegood@example.com'),
-(12, 'Ginny', 'Weasley', 'Host', 5, 'ginny.weasley@example.com'),
-(13, 'Jeremy', 'Mazzocco', 'Web Developer', 5, 'jeremy.mazzocco@example.com'),
-(14, 'Fiona', 'Smith', 'Receptionist', 6, 'fiona.smith@example.com'),
-(15, 'Leonardo', 'Ricci', 'Waiter', 7, 'leonardo.ricci@example.com'),
-(16, 'Sophie', 'Mercier', 'Bartender', 1, 'sophie.mercier@example.com'),
-(17, 'Luis', 'Garcia', 'Security', 2, 'luis.garcia@example.com'),
-(18, 'Anya', 'Ivanova', 'Chef', 3, 'anya.ivanova@example.com'),
-(19, 'Luke', 'Muller', 'Coordinator', 4, 'luke.muller@example.com'),
-(20, 'Isabella', 'Santos', 'Manager', 5, 'isabella.santos@example.com'),
-(21, 'Emily', 'Wang', 'Host', 6, 'emily.wang@example.com'),
-(22, 'Madison', 'Johnson', 'Singer', 7, 'madison.johnson@example.com'),
-(23, 'Liam', 'OBrien', 'Gardener', 1, 'liam.obrien@example.com'),
-(24, 'Olivia', 'Martinez', 'Magician', 1, 'olivia.martinez@example.com'),
-(25, 'Ethan', 'Zhang', 'Waiter', 3, 'ethan.zhang@example.com'),
-(26, 'Ava', 'Magnusson', 'Receptionist', 4, 'ava.magnusson@example.com'),
-(27, 'Noah', 'Kumar', 'Security', 5, 'noah.kumar@example.com'),
-(28, 'Emma', 'Van de Berg', 'Chef', 7, 'emma.vandeberg@example.com'),
-(29, 'Logan', 'Haddad', 'Coordinator', 7, 'logan.haddad@example.com'),
-(30, 'Charlotte', 'Wilson', 'Manager', 1, 'charlotte.wilson@example.com'),
-(31, 'Benjamin', 'Novak', 'Host', 2, 'benjamin.novak@example.com'),
-(32, 'Mia', 'Horvat', 'Singer', 1, 'mia.horvat@example.com'),
-(33, 'Lucas', 'Silva', 'Gardener', 4, 'lucas.silva@example.com'),
-(34, 'Amelia', 'Schmidt', 'Waiter', 5, 'amelia.schmidt@example.com'),
-(35, 'Jacob', 'Papadopoulos', 'Magician', 7, 'jacob.papadopoulos@example.com'),
-(36, 'Harper', 'Nakamura', 'Receptionist', 7, 'harper.nakamura@example.com'),
-(37, 'Evelyn', 'Müller', 'Bartender', 1, 'evelyn.muller@example.com'),
-(38, 'Matthew', 'Rossi', 'Security', 1, 'matthew.rossi@example.com'),
-(39, 'Ella', 'Johansson', 'Chef', 1, 'ella.johansson@example.com'),
-(40, 'Alexander', 'Nielsen', 'Coordinator', 4, 'alexander.nielsen@example.com'),
-(41, 'Aria', 'García', 'Manager', 5, 'aria.garcia@example.com'),
-(42, 'Mason', 'Petrov', 'Host', 6, 'mason.petrov@example.com'),
-(43, 'Victoria', 'Chen', 'Singer', 7, 'victoria.chen@example.com');
+-- Dumping data for table `employee`
+INSERT INTO `employee` (`id`, `first_name`, `last_name`, `role_id`, `facility_id`, `email`) VALUES
+(1, 'John', 'Doe', 1, 1, 'john.doe@example.com'),
+(2, 'Jane', 'Doe', 2, 2, 'jane.doe@example.com'),
+(3, 'Jim', 'Beam', 3, 3, 'jim.beam@example.com'),
+(4, 'Jack', 'Daniels', 4, 4, 'jack.daniels@example.com'),
+(5, 'Mary', 'Poppins', 5, 5, 'mary.poppins@example.com'),
+(6, 'Harry', 'Potter', 7, 1, 'harry.potter@example.com'),
+(7, 'Hermione', 'Granger', 7, 7, 'hermione.granger@example.com'),
+(8, 'Ron', 'Weasley', 2, 1, 'ron.weasley@example.com'),
+(9, 'Draco', 'Malfoy', 3, 2, 'draco.malfoy@example.com'),
+(10, 'Neville', 'Longbottom', 4, 3, 'neville.longbottom@example.com'),
+(11, 'Luna', 'Lovegood', 5, 4, 'luna.lovegood@example.com'),
+(12, 'Ginny', 'Weasley', 1, 5, 'ginny.weasley@example.com'),
+(13, 'Jeremy', 'Mazzocco', 1, 5, 'jeremy.mazzocco@example.com'),
+(14, 'Fiona', 'Smith', 1, 6, 'fiona.smith@example.com'),
+(15, 'Leonardo', 'Ricci', 1, 7, 'leonardo.ricci@example.com'),
+(16, 'Sophie', 'Mercier', 4, 1, 'sophie.mercier@example.com'),
+(17, 'Luis', 'Garcia', 3, 2, 'luis.garcia@example.com'),
+(18, 'Anya', 'Ivanova', 2, 3, 'anya.ivanova@example.com'),
+(19, 'Luke', 'Muller', 5, 4, 'luke.muller@example.com'),
+(20, 'Isabella', 'Santos', 1, 5, 'isabella.santos@example.com'),
+(21, 'Emily', 'Wang', 6, 6, 'emily.wang@example.com'),
+(22, 'Madison', 'Johnson', 5, 7, 'madison.johnson@example.com'),
+(23, 'Liam', 'OBrien', 1, 1, 'liam.obrien@example.com'),
+(24, 'Olivia', 'Martinez', 1, 1, 'olivia.martinez@example.com'),
+(25, 'Ethan', 'Zhang', 7, 3, 'ethan.zhang@example.com'),
+(26, 'Ava', 'Magnusson', 6, 4, 'ava.magnusson@example.com'),
+(27, 'Noah', 'Kumar', 5, 5, 'noah.kumar@example.com'),
+(28, 'Emma', 'Van de Berg', 2, 7, 'emma.vandeberg@example.com'),
+(29, 'Logan', 'Haddad', 5, 7, 'logan.haddad@example.com'),
+(30, 'Charlotte', 'Wilson', 1, 1, 'charlotte.wilson@example.com'),
+(31, 'Benjamin', 'Novak', 2, 2, 'benjamin.novak@example.com'),
+(32, 'Mia', 'Horvat', 5, 1, 'mia.horvat@example.com'),
+(33, 'Lucas', 'Silva', 4, 4, 'lucas.silva@example.com'),
+(34, 'Amelia', 'Schmidt', 1, 5, 'amelia.schmidt@example.com'),
+(35, 'Jacob', 'Papadopoulos', 1, 7, 'jacob.papadopoulos@example.com'),
+(36, 'Harper', 'Nakamura', 6, 7, 'harper.nakamura@example.com'),
+(37, 'Evelyn', 'Müller', 4, 1, 'evelyn.muller@example.com'),
+(38, 'Matthew', 'Rossi', 3, 1, 'matthew.rossi@example.com'),
+(39, 'Ella', 'Johansson', 2, 1, 'ella.johansson@example.com'),
+(40, 'Alexander', 'Nielsen', 5, 4, 'alexander.nielsen@example.com'),
+(41, 'Aria', 'García', 1, 5, 'aria.garcia@example.com'),
+(42, 'Mason', 'Petrov', 6, 6, 'mason.petrov@example.com'),
+(43, 'Victoria', 'Chen', 5, 7, 'victoria.chen@example.com');
 
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `role`
+--
+
+CREATE TABLE `role` (
+  `id` int(11) NOT NULL,
+  `position` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `role`
+--
+
+INSERT INTO `role` (`id`, `position`) VALUES
+(7, 'Dishwasher'),
+(6, 'Bartender'),
+(5, 'Barista'),
+(4, 'Waiter'),
+(3, 'Chef'),
+(2, 'Cook'),
+(1, 'Menager');
 
 -- --------------------------------------------------------
 
@@ -221,23 +246,52 @@ INSERT INTO `tag` (`id`, `name`) VALUES
 -- Table structure for table `users`
 --
 
-
 CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(255) NOT NULL UNIQUE,
+    `password_hash` VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `username`, `password_hash`) VALUES
+(1, 'test', '$2y$1cdcac');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `access_tokens`
+--
+
+CREATE TABLE `access_tokens` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `token` VARCHAR(255) NOT NULL UNIQUE,
+    `user_id` INT NOT NULL,
+    `expiry` DATETIME NOT NULL,
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- --------------------------------------------------------
 
 --
 -- Indexes for dumped tables
 --
-
 --
 -- Indexes for table `employee`
 --
 ALTER TABLE `employee`
   ADD PRIMARY KEY (`id`),
   ADD KEY `facility_id` (`facility_id`);
+
+--
+-- Indexes for table `role`
+--
+ALTER TABLE `role`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `facility`
@@ -277,6 +331,12 @@ ALTER TABLE `employee`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
+-- AUTO_INCREMENT for table `employee`
+--
+ALTER TABLE `role`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `facility`
 --
 ALTER TABLE `facility`
@@ -302,7 +362,8 @@ ALTER TABLE `tag`
 -- Constraints for table `employee`
 --
 ALTER TABLE `employee`
-  ADD CONSTRAINT `employee_ibfk_1` FOREIGN KEY (`facility_id`) REFERENCES `facility` (`id`);
+  ADD CONSTRAINT `employee_ibfk_1` FOREIGN KEY (`facility_id`) REFERENCES `facility` (`id`),
+   ADD CONSTRAINT `employee_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`);
 
 --
 -- Constraints for table `facility`

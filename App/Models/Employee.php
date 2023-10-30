@@ -13,8 +13,8 @@ class Employee extends Injectable
     /** @var string */
     private $last_name;
 
-    /** @var string */
-    private $role;
+    /** @var int */
+    private $role_id;
 
     /** @var int */
     private $facility_id;
@@ -26,16 +26,16 @@ class Employee extends Injectable
      * Employee constructor.
      * @param string $first_name
      * @param string $last_name
-     * @param string $role
+     * @param int $role_id
      * @param int $facility_id
      * @param string $email
      */
 
-    public function __construct($first_name, $last_name, $role, $facility_id, $email)
+    public function __construct($first_name, $last_name, $role_id, $facility_id, $email)
     {
         $this->setFirstName($first_name);
         $this->setLastName($last_name);
-        $this->setRole($role);
+        $this->setRole($role_id);
         $this->setFacilityId($facility_id);
         $this->setEmail($email);
     }
@@ -103,21 +103,21 @@ class Employee extends Injectable
 
 
     /**
-     * Get role
-     * @return string
+     * Get role ID
+     * @return int
      */
 
     public function getRole()
     {
-        return $this->role;
+        return $this->role_id;
     }
 
     /**
-     * Set role
-     * @param string $role
+     * Set role ID
+     * @param int $role_id
      */
 
-    public function setRole($role)
+    public function setRole($role_id)
     {
         // if (!is_string($role) || strlen($role) > 255) {
         //     throw new Exceptions\BadRequest(['message' => "Bad Request. Each employee's role must be a string and less than 256 characters."]);
@@ -127,7 +127,7 @@ class Employee extends Injectable
         //     throw new Exceptions\BadRequest(['message' => "Bad Request. Couldn't insert role"]);
         // }
 
-        $this->role = $role;
+        $this->role_id = $role_id;
     }
 
 

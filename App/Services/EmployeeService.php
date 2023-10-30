@@ -30,25 +30,25 @@ class EmployeeService extends Injectable
      */
     public function create($data)
     {
-        // check if email is already in database
         $this->checkEmailExistence($data);
 
-        // check if facility is already in database
         $this->doesFacilityExist($data['facility_id']);
+
+        $this->doesRoleExist($data['role_id']);
 
         $employee = new Employee(
             $data['first_name'],
             $data['last_name'],
-            $data['role'],
+            $data['role_id'],
             $data['facility_id'],
             $data['email']
         );
 
-        $query = 'INSERT INTO Employee (first_name, last_name, role, facility_id, email) VALUES (:first_name, :last_name, :role, :facility_id, :email)';
+        $query = 'INSERT INTO Employee (first_name, last_name, role_id, facility_id, email) VALUES (:first_name, :last_name, :role_id, :facility_id, :email)';
         $bind = [
             'first_name' => $employee->getFirstName(),
             'last_name' => $employee->getLastName(),
-            'role' => $employee->getRole(),
+            'role_id' => $employee->getRole(),
             'facility_id' => $employee->getFacilityId(),
             'email' => $employee->getEmail()
         ];
@@ -67,26 +67,26 @@ class EmployeeService extends Injectable
      */
     public function edit($data, $employeeId)
     {
-        // check if facility is already in database
         $this->doesEmployeeExist($employeeId);
 
-        // check if email is already in database
         $this->checkEmailExistence($data);
+
+        $this->doesRoleExist($data['role_id']);
 
         $employee = new Employee(
             $data['first_name'],
             $data['last_name'],
-            $data['role'],
+            $data['role_id'],
             $data['facility_id'],
             $data['email']
         );
 
         // Update the existing employee
-        $query = 'UPDATE Employee SET first_name = :first_name, last_name = :last_name, role = :role, facility_id = :facility_id, email = :email WHERE id = :id';
+        $query = 'UPDATE Employee SET first_name = :first_name, last_name = :last_name, role_id = :role_id, facility_id = :facility_id, email = :email WHERE id = :id';
         $bind = [
             'first_name' => $employee->getFirstName(),
             'last_name' => $employee->getLastName(),
-            'role' => $employee->getRole(),
+            'role_id' => $employee->getRole(),
             'facility_id' => $employee->getFacilityId(),
             'email' => $employee->getEmail(),
             'id' => $employeeId
@@ -105,8 +105,6 @@ class EmployeeService extends Injectable
      */
     public function delete($employeeId)
     {
-
-        // check if employee is already in database
         $this->doesEmployeeExist($employeeId);
 
         $query = 'DELETE FROM Employee WHERE id = :employee_id';
@@ -118,6 +116,7 @@ class EmployeeService extends Injectable
     }
 
 
+    
     // OTHER FUNCTIONS: 
 
     /**
@@ -150,7 +149,6 @@ class EmployeeService extends Injectable
      */
     public function doesFacilityExist($facilityId)
     {
-        // Check if the facility exists
         $query = 'SELECT id FROM Facility WHERE id = :facility_id';
         $bind = ['facility_id' => $facilityId];
 
@@ -159,6 +157,25 @@ class EmployeeService extends Injectable
         }
         if (!$this->db->getResults()) {
             throw new Exceptions\NotFound(['message' => 'Not Found. Facility does not exist.']);
+        }
+    }
+    /**
+     * Verifies the existence of a role by its ID.
+     *
+     * @param int $roleId The ID of the role to verify.
+     * @throws Exceptions\InternalServerError If there's an issue executing the query.
+     * @throws Exceptions\NotFound If the role is not found in the database.
+     */
+    public function doesRoleExist($roleId)
+    {
+        $query = 'SELECT id FROM Role WHERE id = :role_id';
+        $bind = ['role_id' => $roleId];
+
+        if (!$this->db->executeQuery($query, $bind)) {
+            throw new Exceptions\InternalServerError(['message' => 'Internal Server Error. Failed to execute query during role verification.']);
+        }
+        if (!$this->db->getResults()) {
+            throw new Exceptions\NotFound(['message' => 'Not Found. Role does not exist.']);
         }
     }
 

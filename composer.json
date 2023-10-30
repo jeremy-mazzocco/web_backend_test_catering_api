@@ -8,7 +8,8 @@
   },
   "require": {
     "bramus/router": "^1.6",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "league/oauth2-server": "^8.4"
   },
   "require-dev": {
     "phpunit/phpunit": "^10.4",

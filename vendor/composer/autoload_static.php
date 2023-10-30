@@ -74,6 +74,7 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
             'Symfony\\Bundle\\MonologBundle\\' => 29,
             'Symfony\\Bundle\\FrameworkBundle\\' => 31,
             'Symfony\\Bridge\\Monolog\\' => 23,
+            'StellaMaris\\Clock\\' => 18,
         ),
         'P' => 
         array (
@@ -81,6 +82,7 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
             'Psr\\Http\\Message\\' => 17,
             'Psr\\EventDispatcher\\' => 20,
             'Psr\\Container\\' => 14,
+            'Psr\\Clock\\' => 10,
             'Psr\\Cache\\' => 10,
             'PhpParser\\' => 10,
             'PHPStan\\PhpDocParser\\' => 21,
@@ -97,9 +99,13 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
             'League\\Tactician\\Bundle\\' => 24,
             'League\\Tactician\\' => 17,
             'League\\Pipeline\\' => 16,
+            'League\\OAuth2\\Server\\' => 21,
             'League\\MimeTypeDetection\\' => 25,
             'League\\Flysystem\\' => 17,
+            'League\\Event\\' => 13,
             'League\\CommonMark\\' => 18,
+            'Lcobucci\\JWT\\' => 13,
+            'Lcobucci\\Clock\\' => 15,
         ),
         'J' => 
         array (
@@ -114,6 +120,7 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
             'Doctrine\\Deprecations\\' => 22,
             'Doctrine\\Common\\Lexer\\' => 22,
             'Doctrine\\Common\\' => 16,
+            'Defuse\\Crypto\\' => 14,
             'DeepCopy\\' => 9,
         ),
         'A' => 
@@ -286,6 +293,10 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
         array (
             0 => __DIR__ . '/..' . '/symfony/monolog-bridge',
         ),
+        'StellaMaris\\Clock\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/stella-maris/clock/src',
+        ),
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
@@ -301,6 +312,10 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'Psr\\Clock\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/clock/src',
         ),
         'Psr\\Cache\\' => 
         array (
@@ -343,6 +358,10 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
         array (
             0 => __DIR__ . '/..' . '/league/pipeline/src',
         ),
+        'League\\OAuth2\\Server\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/oauth2-server/src',
+        ),
         'League\\MimeTypeDetection\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/mime-type-detection/src',
@@ -351,9 +370,21 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
         array (
             0 => __DIR__ . '/..' . '/league/flysystem/src',
         ),
+        'League\\Event\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/event/src',
+        ),
         'League\\CommonMark\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/commonmark/src',
+        ),
+        'Lcobucci\\JWT\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/lcobucci/jwt/src',
+        ),
+        'Lcobucci\\Clock\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/lcobucci/clock/src',
         ),
         'Jean85\\' => 
         array (
@@ -374,6 +405,10 @@ class ComposerStaticInit045d7a81c94a6168d73dc55af30477b8
         'Doctrine\\Common\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/event-manager/src',
+        ),
+        'Defuse\\Crypto\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/defuse/php-encryption/src',
         ),
         'DeepCopy\\' => 
         array (
