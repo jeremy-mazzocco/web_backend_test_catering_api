@@ -8,7 +8,6 @@ use App\Services\AuthService;
 
 class AuthController extends BaseController
 {
-
     /**
      * Registers a new user.
      * 
