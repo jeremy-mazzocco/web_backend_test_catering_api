@@ -9,16 +9,12 @@ class Employee extends Injectable
 {
     /** @var string */
     private $first_name;
-
     /** @var string */
     private $last_name;
-
     /** @var int */
     private $role_id;
-
     /** @var int */
     private $facility_id;
-    
     /** @var string */
     private $email;
 

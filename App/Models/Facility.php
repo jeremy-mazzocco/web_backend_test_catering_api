@@ -10,28 +10,24 @@ class Facility extends Injectable
 {
     /** @var string */
     private $name;
-
     /** @var string */
     private $creation_date;
-
     /** @var int */
     private $location_id;
-    
     /** @var array */
     private $tags = [];
 
-    
+
     public function __construct($name, $creation_date, $location_id, $tags = [])
     {
         /**
-         * Costruttore della classe Facility.
+         * Constructor for the Facility class.
          *
-         * @param string $name Il nome della struttura.
-         * @param string $creation_date La data di creazione nel formato 'YYYY-MM-DD'.
-         * @param int $location_id L'ID della posizione della struttura.
-         * @param array $tags Un array di tag associati alla struttura.
+         * @param string $name The name of the facility.
+         * @param string $creation_date The creation date in the 'YYYY-MM-DD' format.
+         * @param int $location_id The ID of the facility's location.
+         * @param array $tags An array of tags associated with the facility.
          */
-
         $this->setName($name);
         $this->setCreationDate($creation_date);
         $this->setLocationId($location_id);
@@ -41,11 +37,11 @@ class Facility extends Injectable
 
     // The validations in the model can be reactivated to provide an additional layer of data integrity.
 
-    
+
     /**
-     * Restituisce il nome della struttura.
+     * Get the name of the facility.
      *
-     * @return string Il nome della struttura.
+     * @return string The name of the facility.
      */
     public function getName()
     {
@@ -53,9 +49,9 @@ class Facility extends Injectable
     }
 
     /**
-     * Imposta il nome della struttura.
+     * Set the name of the facility.
      *
-     * @param string $name Il nome della struttura.
+     * @param string $name The name of the facility.
      */
     public function setName($name)
     {
@@ -72,9 +68,9 @@ class Facility extends Injectable
 
 
     /**
-     * Restituisce la data di creazione della struttura nel formato 'YYYY-MM-DD'.
+     * Returns the creation date of the facility in 'YYYY-MM-DD' format.
      *
-     * @return string La data di creazione della struttura.
+     * @return string The creation date of the facility.
      */
     public function getCreationDate()
     {
@@ -82,9 +78,9 @@ class Facility extends Injectable
     }
 
     /**
-     * Imposta la data di creazione della struttura.
+     * Sets the creation date of the facility.
      *
-     * @param string $creation_date La data di creazione nel formato 'YYYY-MM-DD'.
+     * @param string $creation_date The creation date in 'YYYY-MM-DD' format.
      */
     public function setCreationDate($creation_date)
     {
@@ -102,10 +98,10 @@ class Facility extends Injectable
     }
 
 
-     /**
-     * Restituisce l'ID della posizione della struttura.
+    /**
+     * Returns the ID of the facility's location.
      *
-     * @return int L'ID della posizione.
+     * @return int The ID of the location.
      */
     public function getLocationId()
     {
@@ -113,9 +109,9 @@ class Facility extends Injectable
     }
 
     /**
-     * Imposta l'ID della posizione della struttura.
+     * Sets the ID of the facility's location.
      *
-     * @param int $location_id L'ID della posizione.
+     * @param int $location_id The ID of the location.
      */
     public function setLocationId($location_id)
     {
@@ -131,20 +127,20 @@ class Facility extends Injectable
     }
 
 
-     /**
-     * Restituisce un array di tag associati alla struttura.
+    /**
+     * Returns an array of tags associated with the facility.
      *
-     * @return array Un array di tag.
+     * @return array An array of tags.
      */
     public function getTags()
     {
         return $this->tags;
     }
 
-     /**
-     * Imposta un array di tag associati alla struttura.
+    /**
+     * Sets an array of tags associated with the facility.
      *
-     * @param array $tags Un array di tag.
+     * @param array $tags An array of tags.
      */
     public function setTags($tags)
     {
